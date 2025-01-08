@@ -1,0 +1,70 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+pool:
+  name: Default
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  angularProjectDir: 'client' 
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip"' 
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+# Install Node.js
+- task: UseNode@1
+  inputs:
+    version: '20.x'  # Use the appropriate Node.js version for your project
+  displayName: 'Install Node'
+
+# Install Angular CLI
+- script: npm install -g @angular/cli
+  displayName: 'Install Angular CLI'
+
+# Install Angular project dependencies
+- script: npm install
+  workingDirectory: '$(angularProjectDir)'
+  displayName: 'Install Angular dependencies'
+
+# Build Angular frontend
+- script: ng build
+  workingDirectory: '$(angularProjectDir)'
+  displayName: 'Build Angular project'
+  
+# Publish Angular artifacts
+- task: CopyFiles@2
+  inputs:
+    contents: $(angularProjectDir)/dist/**/*
+    targetFolder: '$(Build.artifactStagingDirectory)'
+    OverWrite: true
+  displayName: 'Copy Angular artifacts'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish Artifact'

@@ -1,0 +1,66 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+variables:
+  container-registry: 'ghcr.io'
+  container-repository-api: 'clock1998/campusmeet'
+  container-name-client: 'meet-campus-client'
+  tag: 'latest'
+  github-token: ''
+pool:
+  name: Azure Selfhosted
+steps:
+- task: Docker@2
+  displayName: Login to Github packages
+  inputs:
+    containerRegistry: $(container-registry)
+    command: 'login'
+    arguments: --username clock1998 --password $(github-token)
+- task: Docker@2
+  displayName: Docker Build
+  inputs:
+    command: 'build'
+    Dockerfile: 'Dockerfile'
+    containerRegistry: $(container-registry)
+    repository: $(container-repository-api)
+    tags: $(tag)
+
+- task: Docker@2
+  displayName: Docker Push
+  inputs:
+    containerRegistry: $(container-registry)
+    command: 'push'
+    repository: $(container-repository-api)
+    tags: $(tag)
+- task: CmdLine@2
+  inputs:
+    script: 'docker system prune -f'
+# - task: CmdLine@2
+#   displayName: Start meet campus api
+#   inputs:
+#     script: |
+#       docker rm -f meet-campus-api
+#       docker run -d --network tunnel -p 5000:5000 --restart unless-stopped --name meet-campus-api $(tag-api)
+# - task: Docker@2
+#   displayName: Build meet campus client image
+#   inputs:
+#     command: 'build'
+#     Dockerfile: './client/Dockerfile.prod'
+#     buildContext: './client/'
+#     arguments: -t $(tag-client)
+
+# - task: CmdLine@2
+#   displayName: Remove Old image
+#   inputs:
+#     script: docker image prune
+# - task: CmdLine@2
+#   displayName: Start meet campus client
+#   inputs:
+#     script: |
+#         docker rm -f meet-campus-client
+#         docker run -p 5173:5173 --restart unless-stopped -d  --network tunnel --name meet-campus-client $(tag-client)

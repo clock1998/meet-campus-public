@@ -1,0 +1,48 @@
+<div class="flex justify-center h-[90vh]">
+  <button for="card" class="btn lg:hidden" (click)="toggleSidebar()">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+    </svg>
+  </button>
+  <div class="card bg-base-100 w-fit shadow-xl  lg:block overflow-y-auto" [ngClass]="{'hidden': !showSidebar}">
+    <div class="card-body">
+      <ul class="menu rounded-box w-56">
+        @for (email of emails; track $index) {
+          <li>{{email}}</li>
+        }
+      </ul>
+    </div>
+  </div>
+  <div class="flex-1 flex flex-col">
+    <!-- Navbar -->
+    <div class="navbar bg-base-100">
+      <div class="flex-none">
+
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex-none">
+        <button #matchBtn class="btn btn-success" (click)="match()" disabled>Match</button>
+      </div>
+    </div>
+
+    <!-- Video Container -->
+    <div id="videoContainer" class="relative flex-1 p-3">
+      <video id="remoteVideo" class="w-full h-full object-cover" #remoteVideo autoplay (click)="paused? play() : pause()"></video>
+      <video id="localVideo" class="w-1/4 absolute bottom-4 right-4 border-2 border-white shadow-lg" #localVideo autoplay (click)="paused ? play() : pause()"></video>
+    </div>
+  </div>
+</div>
+
+
+<style>
+  @media (max-width: 1024px) {
+    #videoContainer {
+      height: calc(100vh - 4rem); /* Adjust based on navbar height */
+    }
+  }
+  @media (min-width: 1024px) {
+    #videoContainer {
+      height: 100vh;
+    }
+  }
+</style>

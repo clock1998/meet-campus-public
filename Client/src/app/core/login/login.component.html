@@ -1,0 +1,80 @@
+@if(isLoginDialog){
+<h3 class="text-lg font-bold">Login</h3>
+<form class="card-body" [formGroup]="loginForm" (ngSubmit)="loginFormSubmit()">
+    <div class="form-control">
+        <label class="label" for="email">
+            <span class="label-text">Email</span>
+        </label>
+        <input formControlName="email" type="email" placeholder="email" class="input input-bordered" appInputError
+            [control]="loginForm.controls['email']" />
+    </div>
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Password</span>
+        </label>
+        <input formControlName="password" type="password" placeholder="password" class="input input-bordered"
+            appInputError [control]="loginForm.controls['password']" />
+        <label class="label">
+            <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
+        </label>
+    </div>
+    <div class="form-control mt-6 flex flex-col">
+        <button class="btn btn-accent my-2" type="submit">Login</button>
+        <button class="btn btn-info my-2" (click)="toggleLoginDialog()">Register</button>
+    </div>
+    <!-- <p>Form Status: {{ loginForm.get('email')?.errors | json }}</p> -->
+    <div *ngIf="serverSideErrorMessage" class="alert alert-error">
+        {{serverSideErrorMessage}}
+    </div>
+    <div *ngIf="loginForm.get('email')?.invalid && (loginForm.get('email')?.dirty || loginForm.get('email')?.touched)" class="alert alert-error">
+        <div *ngIf="loginForm.get('email')?.hasError('required')">
+            Email is required.
+        </div>
+        <div *ngIf="loginForm.get('email')?.hasError('email')">
+            Email format is incorrect.
+        </div>
+    </div>
+</form>
+}
+@else{
+<h3 class="text-lg font-bold">Sign Up</h3>
+<form class="card-body" [formGroup]="signupForm" (ngSubmit)="signupFormSubmit()">
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Email</span>
+        </label>
+        <input formControlName="email" type="email" class="input input-bordered" appInputError
+            [control]="signupForm.controls['email']" />
+    </div>
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Password</span>
+        </label>
+        <input formControlName="password" type="password" class="input input-bordered" appInputError
+            [control]="signupForm.controls['password']" />
+        <label class="label">
+            <span class="label-text">Confirm Password</span>
+        </label>
+        <input formControlName="passwordConfirm" type="password" class="input input-bordered" appInputError
+            [control]="signupForm.controls['password']" />
+    </div>
+    <div class="form-control mt-6 flex flex-col">
+        <button class="btn btn-success my-2" type="submit">Sign Up</button>
+        <button class="btn btn-accent my-2" (click)="toggleLoginDialog()">Login</button>
+    </div>
+    <div *ngIf="serverSideErrorMessage" class="alert alert-error">
+        {{serverSideErrorMessage}}
+    </div>
+    <div *ngIf="signupForm.get('email')?.invalid && (signupForm.get('email')?.dirty || signupForm.get('email')?.touched)" class="alert alert-error flex flex-col items-start">
+        <div *ngIf="signupForm.get('email')?.hasError('required')">
+            Email is required.
+        </div>
+        <div *ngIf="signupForm.get('email')?.hasError('email')">
+            Email format is incorrect.
+        </div>
+        <div *ngIf="signupForm.get('email')?.hasError('emailDomain')">
+            Must use mcgill email.
+        </div>
+    </div>
+</form>
+}

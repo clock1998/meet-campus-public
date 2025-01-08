@@ -1,0 +1,10 @@
+@use '@angular/material' as mat;
+@use '@angular/cdk' as cdk;
+@include mat.elevation-classes();
+@include mat.app-background();
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@include cdk.overlay();

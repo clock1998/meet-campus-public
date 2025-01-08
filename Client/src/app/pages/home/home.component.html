@@ -1,0 +1,162 @@
+<div class="overflow-x-hidden overflow-y-auto h-[90vh] snap-y snap-mandatory snap-always bg-base-200">
+  <div class="hero h-[90vh] snap-start">
+    <div class="hero-content text-center">
+      <article class="prose lg:prose-xl">
+        <h1 #animatedText
+          class="opacity-0 blur-md transition-all ease-in-out duration-1000  motion-reduce:transition-none ">
+          No one to talk to in a huge class with 200+ students?
+        </h1>
+      </article>
+    </div>
+  </div>
+  <div class="hero h-[90vh] snap-start">
+    <div class="hero-content text-center ">
+      <article class="prose lg:prose-xl">
+        <h1 #animatedText
+          class="opacity-0 blur-md transition-all ease-in-out duration-1000 motion-reduce:transition-none">
+          Heavy lecture with 0 interactions?
+        </h1>
+      </article>
+    </div>
+  </div>
+  <div class="hero h-[90vh] snap-start">
+    <div class="hero-content text-center">
+      <article class="prose lg:prose-xl">
+        <h1 #animatedText
+          class="opacity-0 blur-md transition-all ease-in-out duration-1000 motion-reduce:transition-none">
+          In your last year but no friends?
+        </h1>
+      </article>
+    </div>
+  </div>
+  <div class="hero h-[90vh] snap-start">
+    <div class="hero-content text-center">
+      <article class="prose lg:prose-xl">
+        <h1 #animatedText
+          class="opacity-0 blur-md transition-all ease-in-out duration-1000 motion-reduce:transition-none">
+          Any of them sound familiar to you?
+        </h1>
+      </article>
+    </div>
+  </div>
+  
+  <div class="hero h-[90vh] snap-start">
+    <div class="hero-content flex flex-col lg:flex-row justify-between items-start ">
+      <article class="w-full lg:w-1/2 prose lg:prose-xl -translate-x-72 opacity-0 blur-md transition-all ease-in-out duration-1000 motion-reduce:transition-none" #animatedText>
+        <h3>UNFORGATABLE STUDENT LIFE EXPERIENCE</h3>
+        <h2>39,513 Mcgill students are your friends</h2>
+        <h4>Meet Campus is a non-profit platform that matches you with a random student using one-on-one messaging and video chat.</h4>
+      </article>
+      <div class="w-full lg:w-96" class="w-full lg:w-1/2 prose lg:prose-xl translate-x-72 opacity-0 blur-md transition-all ease-in-out duration-1000 motion-reduce:transition-none" #animatedText>
+        <mat-tab-group>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <article class="prose">
+                <h3>Undergrads</h3>
+              </article>
+            </ng-template>
+            <article class="prose lg:prose-xl">
+              <h3>No more missed opportunities</h3>
+              <h4>
+                No more missed opportunities due to under-advertised clubs or lack of study group forums.
+              </h4>
+            </article>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <article class="prose">
+                <h3>Grads</h3>
+              </article>
+            </ng-template>
+            <article class="prose lg:prose-xl">
+              <h3>Enlarge your social circle</h3>
+              <h4>
+                Grow your social circle and meet new people on campus.
+              </h4>
+            </article>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <article class="prose">
+                <h3>Alumni</h3>
+              </article>
+            </ng-template>
+            <article class="prose lg:prose-xl">
+              <h3>Growing your connections</h3>
+              <h4>
+                Reconnect with schools and communities.
+              </h4>
+            </article>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero h-[90vh] snap-start">
+    <div class="hero-content text-center">
+      <div class="opacity-0 blur-md transition-all ease-in-out duration-1000 motion-reduce:transition-none" #animatedText>
+        <article class="prose lg:prose-xl">
+          <h2>Sign Up Now to gain early access! It does not cost you anything.</h2>
+          <button class="btn btn-primary" (click)="dialog?.showDialog()">Sign Up!</button>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero h-[90vh] snap-start">
+    <div class="hero-content text-center">
+      <article class="prose lg:prose-xl">
+        <h1>How does it work?</h1>
+        <h3>
+          Sign up now, so we can inform you when you can login to the platform to meet your friends right here in this site!
+        </h3>
+      </article>
+    </div>
+  </div>
+
+  <div class="hero h-[90vh] snap-start">
+    <div class="hero-content text-center">
+      <article class="prose lg:prose-xl">
+        <h2>We are not here to replace your social medias</h2>
+        <h2>We encourage you to meet your Friends offline on CAMPUS!</h2>
+        <button class="btn btn-primary" (click)="dialog?.showDialog()">Sign Up</button>
+      </article>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<app-dialog #dialog name="emailSignUp">
+  <form class="card-body" [formGroup]="emailSignUpForm" (ngSubmit)="emailSignUpFormSubmit()">
+    <div class="form-control">
+        <label class="label" for="email">
+            <span class="label-text">Email</span>
+        </label>
+        <input formControlName="email" type="email" placeholder="email" class="input input-bordered" appInputError
+            [control]="emailSignUpForm.controls['email']" />
+    </div>
+    <div class="form-control flex items-center">
+      <ngx-turnstile [siteKey]="'0x4AAAAAAAhhbh7n1e8Ss4GI'" theme="auto"  (resolved)="sendCaptchaResponse($event)" formControlName="turnstile"></ngx-turnstile>
+    </div>
+    <div class="form-control mt-6 flex flex-col">
+        <button  [ngClass]="{'btn-disabled': submitButtonDisabled}" class="btn btn-accent my-2" type="submit" >Sign Up</button>
+    </div>
+    <!-- <p>Form Status: {{ loginForm.get('email')?.errors | json }}</p> -->
+    <div *ngIf="serverSideErrorMessage" class="alert alert-error">
+        {{serverSideErrorMessage}}
+    </div>
+    <div *ngIf="emailSignUpForm.get('email')?.invalid && (emailSignUpForm.get('email')?.dirty || emailSignUpForm.get('email')?.touched)" class="alert alert-error">
+        <div *ngIf="emailSignUpForm.get('email')?.hasError('required')">
+            Email is required.
+        </div>
+        <div *ngIf="emailSignUpForm.get('email')?.hasError('email')">
+            Email format is incorrect.
+        </div>
+    </div>
+</form>
+</app-dialog>
