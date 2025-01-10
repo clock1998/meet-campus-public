@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Template.WebAPI.Hubs;
 using Core;
 using WebAPI.Infrastructure.Context;
-using WebAPI.Features.Users;
+using WebAPI.Features.Auth;
 
 namespace Template.WebAPI.Controllers
 {

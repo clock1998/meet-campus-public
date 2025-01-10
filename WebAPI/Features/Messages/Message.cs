@@ -1,4 +1,4 @@
-﻿using WebAPI.Features.Users;
+﻿using WebAPI.Features.Auth;
 using WebAPI.Infrastructure;
 
 namespace WebAPI.Features.Messages

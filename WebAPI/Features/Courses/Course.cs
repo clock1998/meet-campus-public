@@ -1,5 +1,5 @@
-﻿using WebAPI.Features.Semesters;
-using WebAPI.Features.Users;
+﻿using WebAPI.Features.Auth;
+using WebAPI.Features.Semesters;
 using WebAPI.Infrastructure;
 
 namespace WebAPI.Features.Courses

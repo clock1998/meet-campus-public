@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
-using WebAPI.Features.Users;
+using WebAPI.Features.Auth;
 using WebAPI.Infrastructure.Context;
 
 namespace WebAPI

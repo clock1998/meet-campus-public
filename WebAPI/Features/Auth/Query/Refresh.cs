@@ -9,7 +9,7 @@ using WebAPI.Features.Users;
 using WebAPI.Infrastructure.Context;
 using WebAPI.Infrastructure.Helper;
 
-namespace WebAPI.Features.Auth
+namespace WebAPI.Features.Auth.Query
 {
     public sealed record RefreshRequest(string Token, string RefreshToken);
     public sealed class RefreshValidator : AbstractValidator<RefreshRequest>

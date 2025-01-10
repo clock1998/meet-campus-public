@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using WebAPI.Features.Courses;
 using WebAPI.Features.Messages;
+using WebAPI.Features.Users;
 using WebAPI.Infrastructure.Helper;
 
-namespace WebAPI.Features.Users
+namespace WebAPI.Features.Auth
 {
     public class ApplicationUser : IdentityUser<Guid>
     {

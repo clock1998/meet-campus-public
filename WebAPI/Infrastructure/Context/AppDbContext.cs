@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
 using System.Reflection.Metadata;
+using WebAPI.Features.Auth;
 using WebAPI.Features.CMS.Domains;
 using WebAPI.Features.CMS.Emails;
 using WebAPI.Features.Courses;

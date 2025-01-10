@@ -8,7 +8,7 @@ using WebAPI.Features.Users;
 using WebAPI.Infrastructure.Context;
 using WebAPI.Infrastructure.Helper;
 
-namespace WebAPI.Features.Auth
+namespace WebAPI.Features.Auth.Command
 {
     public sealed record VerifyEmailRequest(Guid Id, string Token);
     public sealed class VerifyEmailValidator : AbstractValidator<VerifyEmailRequest>
@@ -61,11 +61,11 @@ namespace WebAPI.Features.Auth
                      extensions: new Dictionary<string, object?>{
                         { "erros", validatorResult.Errors.Select(n => n.ErrorMessage).ToArray()}
                      });
-                
+
             }
             var result = await _handler.HandleAsync(request);
             return Ok(result);
         }
     }
-        
+
 }

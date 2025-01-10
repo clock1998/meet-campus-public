@@ -1,15 +1,9 @@
-﻿using EmailService;
-using FluentValidation;
-using Microsoft.AspNetCore.Identity;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Reflection.Metadata;
-using Template.WebAPI.Repositories;
-using WebAPI.Features.Users;
-using WebAPI.Infrastructure.Context;
 using WebAPI.Infrastructure.Helper;
 
-namespace WebAPI.Features.Auth
+namespace WebAPI.Features.Auth.Query
 {
     public sealed record LoginRequest(string Username, string Password);
 
@@ -22,10 +16,10 @@ namespace WebAPI.Features.Auth
         }
     }
 
-    public class LoginHandler 
+    public class LoginHandler
     {
         private readonly AuthHandler _authHandler;
-        public LoginHandler( AuthHandler authHandler)
+        public LoginHandler(AuthHandler authHandler)
         {
             _authHandler = authHandler;
         }

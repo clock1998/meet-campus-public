@@ -3,7 +3,7 @@ using System.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using WebAPI.Features.Users;
+using WebAPI.Features.Auth;
 
 namespace WebAPI.Infrastructure.Helper
 {

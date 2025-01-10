@@ -1,4 +1,4 @@
-﻿namespace WebAPI.Features.Semesters.Command
+﻿namespace WebAPI.Features.Users.Command
 {
     public class CreateSemester
     {

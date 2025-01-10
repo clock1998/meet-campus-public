@@ -1,4 +1,8 @@
 ﻿using WebAPI.Features.Auth;
+using WebAPI.Features.Auth.Command;
+using WebAPI.Features.Auth.Query;
+using WebAPI.Features.Users.Command;
+using WebAPI.Features.Users.Query;
 
 namespace WebAPI
 {
@@ -6,6 +10,12 @@ namespace WebAPI
     {
         public static IServiceCollection AddHandlerConfiguration(this IServiceCollection services)
         {
+            #region User
+            services.AddScoped<CreateUserHandler>();
+            services.AddScoped<DeleteUserHandler>();
+            services.AddScoped<GetUserByIdHandler>();
+            #endregion
+
             services.AddScoped<AuthHandler>();
             services.AddScoped<LoginHandler>();
             services.AddScoped<RegisterHandler>();

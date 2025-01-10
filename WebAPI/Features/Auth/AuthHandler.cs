@@ -1,6 +1,5 @@
 ﻿using EmailService;
 using Microsoft.AspNetCore.Identity;
-using WebAPI.Features.Users;
 using WebAPI.Infrastructure.Context;
 
 namespace WebAPI.Features.Auth

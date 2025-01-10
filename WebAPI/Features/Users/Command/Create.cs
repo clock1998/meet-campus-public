@@ -1,44 +1,30 @@
-﻿using EmailService;
-using FluentValidation;
-using Microsoft.AspNetCore.Identity;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using Template.WebAPI.Repositories;
-using WebAPI.Features.Users;
-using WebAPI.Infrastructure.Context;
+using WebAPI.Features.Auth;
 using WebAPI.Infrastructure.Helper;
 
-namespace WebAPI.Features.Auth
+namespace WebAPI.Features.Users.Command
 {
-    public sealed record RegisterRequest(string Email, string Password, string PasswordConfirm, string FirstName, string LastName);
-    public class RegisterHandler
+    public sealed record CreateUserRequest(string Email, string Password, string PasswordConfirm, string FirstName, string LastName);
+    public sealed record CreateUserResponse(Guid Id, int Year, string Name);
+    public class CreateUserHandler
     {
         private readonly AuthHandler _authHandler;
-        public RegisterHandler(AuthHandler authHandler)
+        public CreateUserHandler(AuthHandler authHandler)
         {
             _authHandler = authHandler;
         }
 
-        public async Task<ApplicationUser> HandleAsync(RegisterRequest request, IUrlHelper url, string protocol)
+        public async Task<ApplicationUser> HandleAsync(CreateUserRequest request, IUrlHelper url, string protocol)
         {
             var email = request.Email.ToLower().Trim();
             var domain = email.Trim().Split("@")[1];
 
-            //check if email is allowed
-            if (!_authHandler.Context.Domains.Any(n => n.Record == domain))
-            {
-                throw new Exception($"Domains allowed: {string.Join(",", _authHandler.Context.Domains.Select(n => n.Record))}");
-            }
-
             var existingUser = await _authHandler.UserManager.FindByEmailAsync(request.Email);
             //if an user is not verified, remove the user.
-            if (existingUser != null && !existingUser.EmailConfirmed)
+            if (existingUser != null)
             {
-                await _authHandler.UserManager.DeleteAsync(existingUser);
-            }
-            else if (existingUser != null)
-            {
-                // Check if a user with the same email already exists
                 throw new InvalidOperationException("A user with the given email already exists.");
             }
             var appUser = new ApplicationUser
@@ -82,7 +68,7 @@ namespace WebAPI.Features.Auth
             }
         }
     }
-    public sealed class Validator : AbstractValidator<RegisterRequest>
+    public sealed class Validator : AbstractValidator<CreateUserRequest>
     {
         public Validator()
         {
@@ -93,19 +79,19 @@ namespace WebAPI.Features.Auth
             RuleFor(n => n.LastName).NotEmpty();
         }
     }
-    public class RegisterController : AuthController
+
+    public class CreateUserController : UserController
     {
-        private readonly RegisterHandler _handler;
-        private readonly IValidator<RegisterRequest> _validator;
-        public RegisterController(RegisterHandler handler, ILogger<AuthController> logger, IValidator<RegisterRequest> validator)
+        private readonly CreateUserHandler _handler;
+        private readonly IValidator<CreateUserRequest> _validator;
+        public CreateUserController(CreateUserHandler handler, IValidator<CreateUserRequest> validator)
         {
             _handler = handler;
             _validator = validator;
         }
-
-        [SwaggerOperation(Tags = new[] { "Auth" })]
-        [HttpPost, Route("Register")]
-        public async Task<IActionResult> Create([FromBody] RegisterRequest request)
+        [HttpPost]
+        [SwaggerOperation(Tags = new[] { "User" })]
+        public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
         {
             var validatorResult = await _validator.ValidateAsync(request);
             if (!validatorResult.IsValid)
@@ -118,12 +104,12 @@ namespace WebAPI.Features.Auth
             try
             {
                 var result = await _handler.HandleAsync(request, Url, HttpContext.Request.Scheme);
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 return Problem(detail: ex.Message, instance: null, StatusCodes.Status400BadRequest, title: "Register Error", type: "Bad Request");
             }
-            return Ok();
         }
     }
 }
