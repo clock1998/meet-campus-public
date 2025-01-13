@@ -1,12 +1,8 @@
 ﻿using EmailService;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
-using Template.WebAPI.Repositories;
-using WebAPI.Features.Users;
-using WebAPI.Infrastructure.Context;
 using WebAPI.Infrastructure.Helper;
 
 namespace WebAPI.Features.Auth.Query

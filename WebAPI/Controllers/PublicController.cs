@@ -1,6 +1,4 @@
-﻿using Template.WebAPI.Repositories.Inerface;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Template.WebAPI.Controllers
 {

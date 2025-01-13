@@ -1,6 +1,7 @@
 ﻿using WebAPI.Features.Auth;
 using WebAPI.Features.Auth.Command;
 using WebAPI.Features.Auth.Query;
+using WebAPI.Features.UserProfiles.Command;
 using WebAPI.Features.Users.Command;
 using WebAPI.Features.Users.Query;
 
@@ -14,6 +15,11 @@ namespace WebAPI
             services.AddScoped<CreateUserHandler>();
             services.AddScoped<DeleteUserHandler>();
             services.AddScoped<GetUserByIdHandler>();
+            #endregion
+
+            #region UserProfile
+            services.AddScoped<UpdateUserProfileHandler>();
+            services.AddScoped<UploadProfileImageHandler>();
             #endregion
 
             services.AddScoped<AuthHandler>();

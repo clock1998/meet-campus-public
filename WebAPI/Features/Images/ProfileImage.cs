@@ -1,4 +1,4 @@
-﻿using WebAPI.Features.Users;
+﻿using WebAPI.Features.UserProfiles;
 
 namespace WebAPI.Features.Images
 {

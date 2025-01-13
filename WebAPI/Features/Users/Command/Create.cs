@@ -1,9 +1,8 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Swashbuckle.AspNetCore.Annotations;
 using WebAPI.Features.Auth;
+using WebAPI.Features.UserProfiles;
 using WebAPI.Infrastructure.Helper;
 
 namespace WebAPI.Features.Users.Command

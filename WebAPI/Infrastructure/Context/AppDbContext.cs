@@ -10,8 +10,7 @@ using WebAPI.Features.Courses;
 using WebAPI.Features.Images;
 using WebAPI.Features.Messages;
 using WebAPI.Features.Semesters;
-using WebAPI.Features.Users;
-using WebAPI.Infrastructure;
+using WebAPI.Features.UserProfiles;
 
 namespace WebAPI.Infrastructure.Context
 {
@@ -31,6 +30,8 @@ namespace WebAPI.Infrastructure.Context
         public DbSet<ProfileImage> ProfileImages { get; set; }
         public DbSet<Domain> Domains { get; set; }
         public DbSet<Email> Emails { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

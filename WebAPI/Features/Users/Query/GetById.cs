@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
-using WebAPI.Features.Auth;
-using WebAPI.Features.Semesters.Command;
+using WebAPI.Features.UserProfiles;
 using WebAPI.Infrastructure.Context;
 
 namespace WebAPI.Features.Users.Query

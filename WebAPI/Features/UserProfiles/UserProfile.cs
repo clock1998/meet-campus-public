@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using WebAPI.Features.Images;
 using WebAPI.Infrastructure;
-namespace WebAPI.Features.Users
+namespace WebAPI.Features.UserProfiles
 {
     public class UserProfile : Entity
     {

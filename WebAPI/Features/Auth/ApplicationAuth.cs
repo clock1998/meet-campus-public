@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using WebAPI.Features.Courses;
 using WebAPI.Features.Messages;
-using WebAPI.Features.Users;
+using WebAPI.Features.UserProfiles;
 using WebAPI.Infrastructure.Helper;
 
 namespace WebAPI.Features.Auth
