@@ -49,7 +49,7 @@ namespace WebAPI.Features.Auth.Command
             _validator = validator;
         }
 
-        [HttpGet("VerifyEmail/{id:Guid}/{token}")]
+        [HttpGet("VerifyEmail/{id:Guid}/{token}", Name = "VerifyEmail")]
         [SwaggerOperation(Tags = new[] { "Auth" })]
         public async Task<IActionResult> VerifyEmail([FromRoute] Guid id, [FromRoute] string token)
         {

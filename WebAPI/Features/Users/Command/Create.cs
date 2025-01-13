@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Swashbuckle.AspNetCore.Annotations;
 using WebAPI.Features.Auth;
 using WebAPI.Infrastructure.Helper;
@@ -8,15 +10,9 @@ namespace WebAPI.Features.Users.Command
 {
     public sealed record CreateUserRequest(string Email, string Password, string PasswordConfirm, string FirstName, string LastName);
     public sealed record CreateUserResponse(Guid Id, int Year, string Name);
-    public class CreateUserHandler
+    public class CreateUserHandler(AuthHandler _authHandler, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
     {
-        private readonly AuthHandler _authHandler;
-        public CreateUserHandler(AuthHandler authHandler)
-        {
-            _authHandler = authHandler;
-        }
-
-        public async Task<ApplicationUser> HandleAsync(CreateUserRequest request, IUrlHelper url, string protocol)
+        public async Task<ApplicationUser> HandleAsync(CreateUserRequest request)
         {
             var email = request.Email.ToLower().Trim();
             var domain = email.Trim().Split("@")[1];
@@ -46,7 +42,7 @@ namespace WebAPI.Features.Users.Command
                 var addToRoleResult = await _authHandler.UserManager.AddToRoleAsync(appUser, "Student");
                 if (addToRoleResult.Succeeded)
                 {
-                    await SendVerificationEmailAsync(appUser, url, protocol);
+                    await SendVerificationEmailAsync(appUser);
                     return appUser;
                 }
 
@@ -57,10 +53,10 @@ namespace WebAPI.Features.Users.Command
             throw new InvalidOperationException(createResult.Errors.Select(e => e.Description).FirstOrDefault());
         }
 
-        private async Task SendVerificationEmailAsync(ApplicationUser appUser, IUrlHelper url, string protocol)
+        private async Task SendVerificationEmailAsync(ApplicationUser appUser)
         {
             var emailVerificationToken = await _authHandler.UserManager.GenerateEmailConfirmationTokenAsync(appUser);
-            var verificationUrl = url.Action(action: "VerifyEmail", controller: "VerifyEmail", values: new { id = appUser.Id, token = emailVerificationToken.Base64Encode() }, protocol);
+            var verificationUrl = linkGenerator.GetUriByName(httpContextAccessor.HttpContext!, "VerifyEmail", new { id = appUser.Id, token = emailVerificationToken.Base64Encode() });
             if (appUser.UserName != null && appUser.Email != null && verificationUrl != null)
             {
                 var message = new EmailService.Message(new Dictionary<string, string> { { appUser.UserName, appUser.Email } }, "Email Verification", verificationUrl);
@@ -103,7 +99,7 @@ namespace WebAPI.Features.Users.Command
             }
             try
             {
-                var result = await _handler.HandleAsync(request, Url, HttpContext.Request.Scheme);
+                var result = await _handler.HandleAsync(request);
                 return Ok(result);
             }
             catch (Exception ex)

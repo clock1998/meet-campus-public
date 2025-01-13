@@ -7,10 +7,10 @@ namespace WebAPI.Features.Users
     [Authorize(Roles = "Admin")]
     public abstract class UserController : ControllerBase
     {
-        [HttpPut]
-        public async Task<IActionResult> ChangePassword([FromRoute] string id)
-        {
-            return Ok();
-        }
+        //[HttpPut]
+        //public async Task<IActionResult> ChangePassword([FromRoute] string id)
+        //{
+        //    return Ok();
+        //}
     }
 }

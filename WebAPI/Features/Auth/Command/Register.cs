@@ -11,15 +11,9 @@ using WebAPI.Infrastructure.Helper;
 namespace WebAPI.Features.Auth.Command
 {
     public sealed record RegisterRequest(string Email, string Password, string PasswordConfirm, string FirstName, string LastName);
-    public class RegisterHandler
+    public class RegisterHandler(AuthHandler _authHandler, LinkGenerator linkGenerator, IHttpContextAccessor httpContextAccessor)
     {
-        private readonly AuthHandler _authHandler;
-        public RegisterHandler(AuthHandler authHandler)
-        {
-            _authHandler = authHandler;
-        }
-
-        public async Task<ApplicationUser> HandleAsync(RegisterRequest request, IUrlHelper url, string protocol)
+        public async Task<ApplicationUser> HandleAsync(RegisterRequest request)
         {
             var email = request.Email.ToLower().Trim();
             var domain = email.Trim().Split("@")[1];
@@ -60,7 +54,7 @@ namespace WebAPI.Features.Auth.Command
                 var addToRoleResult = await _authHandler.UserManager.AddToRoleAsync(appUser, "Student");
                 if (addToRoleResult.Succeeded)
                 {
-                    await SendVerificationEmailAsync(appUser, url, protocol);
+                    await SendVerificationEmailAsync(appUser);
                     return appUser;
                 }
 
@@ -71,10 +65,10 @@ namespace WebAPI.Features.Auth.Command
             throw new InvalidOperationException(createResult.Errors.Select(e => e.Description).FirstOrDefault());
         }
 
-        private async Task SendVerificationEmailAsync(ApplicationUser appUser, IUrlHelper url, string protocol)
+        private async Task SendVerificationEmailAsync(ApplicationUser appUser)
         {
             var emailVerificationToken = await _authHandler.UserManager.GenerateEmailConfirmationTokenAsync(appUser);
-            var verificationUrl = url.Action(action: "VerifyEmail", controller: "VerifyEmail", values: new { id = appUser.Id, token = emailVerificationToken.Base64Encode() }, protocol);
+            var verificationUrl = linkGenerator.GetUriByName(httpContextAccessor.HttpContext!, "VerifyEmail", new { id = appUser.Id, token = emailVerificationToken.Base64Encode() });
             if (appUser.UserName != null && appUser.Email != null && verificationUrl != null)
             {
                 var message = new Message(new Dictionary<string, string> { { appUser.UserName, appUser.Email } }, "Email Verification", verificationUrl);
@@ -117,7 +111,7 @@ namespace WebAPI.Features.Auth.Command
             }
             try
             {
-                var result = await _handler.HandleAsync(request, Url, HttpContext.Request.Scheme);
+                var result = await _handler.HandleAsync(request);
             }
             catch (Exception ex)
             {
