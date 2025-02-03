@@ -5,7 +5,7 @@ namespace WebAPI.Features.Images.Command
 {
     public record ImageFile(IFormFile File, string? FileDescription);
     public abstract record ImageUploadRequest(ImageFile[] Images);
-    public class UploadImageHandler<T>(AppDbContext context, HttpContextAccessor httpContextAccessor, IWebHostEnvironment webHostEnvironment) : Handler(context) where T : Image
+    public class UploadImageHandler<T>(AppDbContext context, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment webHostEnvironment) : Handler(context) where T : Image
     {
         public virtual async Task<T> HandleAsync(T image)
         {

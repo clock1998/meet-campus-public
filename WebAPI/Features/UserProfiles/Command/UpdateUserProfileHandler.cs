@@ -5,7 +5,7 @@ using WebAPI.Infrastructure.Context;
 namespace WebAPI.Features.UserProfiles.Command
 {
     public record UserProfileRequest(string FirstName, string LastName, DateTime? DateOfBirth, Guid GenderId, Guid? SexsualityId, Guid? DatingGenderId, Guid? EthnicityId, Guid? ProgramId);
-    public class UpdateUserProfileHandler(AppDbContext context, HttpContextAccessor httpContextAccessor)
+    public class UpdateUserProfileHandler(AppDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         public async Task<UserProfile> HandleAsync(Guid id, UserProfileRequest request)
         {

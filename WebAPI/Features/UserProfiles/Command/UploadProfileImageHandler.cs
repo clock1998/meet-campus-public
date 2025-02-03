@@ -7,7 +7,7 @@ using WebAPI.Infrastructure.Helper;
 namespace WebAPI.Features.UserProfiles.Command
 {
     public record ProfileImageUploadRequest(ImageFile[] Images, string UserProfileId) : ImageUploadRequest(Images);
-    public class UploadProfileImageHandler(AppDbContext context, HttpContextAccessor httpContextAccessor, IWebHostEnvironment webHostEnvironment)
+    public class UploadProfileImageHandler(AppDbContext context, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment webHostEnvironment)
         : UploadImageHandler<ProfileImage>(context, httpContextAccessor, webHostEnvironment)
     {
         public override async Task<ProfileImage> HandleAsync(ProfileImage image)
