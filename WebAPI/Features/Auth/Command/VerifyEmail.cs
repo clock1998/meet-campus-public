@@ -38,34 +38,4 @@ namespace WebAPI.Features.Auth.Command
             return result.Succeeded;
         }
     }
-
-    public class VerifyEmailController : AuthController
-    {
-        private readonly VerifyEmailHander _handler;
-        private readonly IValidator<VerifyEmailRequest> _validator;
-        public VerifyEmailController(VerifyEmailHander handler, IValidator<VerifyEmailRequest> validator)
-        {
-            _handler = handler;
-            _validator = validator;
-        }
-
-        [HttpGet("VerifyEmail/{id:Guid}/{token}", Name = "VerifyEmail")]
-        [SwaggerOperation(Tags = new[] { "Auth" })]
-        public async Task<IActionResult> VerifyEmail([FromRoute] Guid id, [FromRoute] string token)
-        {
-            var request = new VerifyEmailRequest(id, token);
-            var validatorResult = await _validator.ValidateAsync(request);
-            if (!validatorResult.IsValid)
-            {
-                return Problem(detail: "Invalide input", instance: null, StatusCodes.Status400BadRequest, title: "Bad Request",
-                     extensions: new Dictionary<string, object?>{
-                        { "erros", validatorResult.Errors.Select(n => n.ErrorMessage).ToArray()}
-                     });
-
-            }
-            var result = await _handler.HandleAsync(request);
-            return Ok(result);
-        }
-    }
-
 }

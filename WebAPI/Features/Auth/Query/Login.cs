@@ -64,36 +64,4 @@ namespace WebAPI.Features.Auth.Query
             throw new InvalidOperationException("Username or password incorrect.");
         }
     }
-    public class LoginController : AuthController
-    {
-        private readonly LoginHandler _handler;
-        private readonly IValidator<LoginRequest> _validator;
-        public LoginController(LoginHandler handler, IValidator<LoginRequest> validator, ILogger<AuthController> logger)
-        {
-            _handler = handler;
-            _validator = validator;
-        }
-
-        [HttpPost, Route("Login")]
-        [SwaggerOperation(Tags = new[] { "Auth" })]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        {
-            var validatorResult = await _validator.ValidateAsync(request);
-            if (!validatorResult.IsValid)
-            {
-                return Problem(detail: "Invalide input", instance: null, StatusCodes.Status400BadRequest, title: "Bad Request",
-                     extensions: new Dictionary<string, object?>{
-                        { "erros", validatorResult.Errors.Select(n => n.ErrorMessage).ToArray()}
-                     });
-            }
-            try
-            {
-                return Ok(await _handler.HandleAsync(request));
-            }
-            catch (Exception ex)
-            {
-                return Problem(detail: ex.Message, instance: null, 400, title: "Login Error", type: "Login Error");
-            }
-        }
-    }
 }

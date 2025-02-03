@@ -56,41 +56,4 @@ namespace WebAPI.Features.Auth.Query
             throw new InvalidOperationException("The user does not have a role.");
         }
     }
-
-    public class RefreshController : AuthController
-    {
-        private readonly RefreshHandler _handler;
-        private readonly IValidator<RefreshRequest> _validator;
-        public RefreshController(RefreshHandler handler, ILogger<AuthController> logger, IValidator<RefreshRequest> validator)
-        {
-            _handler = handler;
-            _validator = validator;
-        }
-
-        [HttpPost]
-        [Route("RefreshToken")]
-        [SwaggerOperation(Tags = new[] { "Auth" })]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshRequest request)
-        {
-            var validatorResult = await _validator.ValidateAsync(request);
-            if (!validatorResult.IsValid)
-            {
-                return Problem(detail: "Invalide input", instance: null, StatusCodes.Status400BadRequest, title: "Bad Request",
-                     extensions: new Dictionary<string, object?>{
-                        { "erros", validatorResult.Errors.Select(n => n.ErrorMessage).ToArray()}
-                     });
-            }
-            try
-            {
-                var result = await _handler.HandlerAsync(request);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                // Log the exception details
-                //_logger.LogError(ex, "Error occurred while refreshing token");
-                return Problem(detail: ex.Message, instance: null, statusCode: 500, title: "RefreshAsync", type: "Exception");
-            }
-        }
-    }
 }

@@ -84,37 +84,4 @@ namespace WebAPI.Features.Auth.Command
             RuleFor(n => n.LastName).NotEmpty();
         }
     }
-    public class RegisterController : AuthController
-    {
-        private readonly RegisterHandler _handler;
-        private readonly IValidator<RegisterRequest> _validator;
-        public RegisterController(RegisterHandler handler, ILogger<AuthController> logger, IValidator<RegisterRequest> validator)
-        {
-            _handler = handler;
-            _validator = validator;
-        }
-
-        [SwaggerOperation(Tags = new[] { "Auth" })]
-        [HttpPost, Route("Register")]
-        public async Task<IActionResult> Create([FromBody] RegisterRequest request)
-        {
-            var validatorResult = await _validator.ValidateAsync(request);
-            if (!validatorResult.IsValid)
-            {
-                return Problem(detail: "Invalide input", instance: null, StatusCodes.Status400BadRequest, title: "Bad Request",
-                     extensions: new Dictionary<string, object?>{
-                        { "erros", validatorResult.Errors.Select(n => n.ErrorMessage).ToArray()}
-                     });
-            }
-            try
-            {
-                var result = await _handler.HandleAsync(request);
-            }
-            catch (Exception ex)
-            {
-                return Problem(detail: ex.Message, instance: null, StatusCodes.Status400BadRequest, title: "Register Error", type: "Bad Request");
-            }
-            return Ok();
-        }
-    }
 }
