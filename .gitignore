@@ -366,3 +366,6 @@ client/src/assets/images/*.mp4
 /WebAPI/appsettings.json
 /WebAPI/appsettings.Production.json
 /WebAPI/appsettings.json
+/WebAPI/key
+/WebAPI/appsettings.json
+/WebAPI/appsettings.Production.json
