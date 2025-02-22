@@ -8,7 +8,7 @@ namespace WebAPI.Features.Auth
 {
     [Route("api/[controller]")]
     [ApiController]
-    public abstract class AuthController(
+    public class AuthController(
         RegisterHandler _registerHandler, IValidator<RegisterRequest> _registerValidator,
         VerifyEmailHander _verifyEmailhandler, IValidator<VerifyEmailRequest> _verifyEmailValidator,
         LoginHandler _loginHandler, IValidator<LoginRequest> _loginRequestValidator, 

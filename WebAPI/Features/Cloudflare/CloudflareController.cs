@@ -9,7 +9,7 @@ using Core;
 using WebAPI.Infrastructure.Context;
 using WebAPI.Features.Auth;
 
-namespace Template.WebAPI.Controllers
+namespace WebAPI.Features.Cloudflare
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -24,9 +24,9 @@ namespace Template.WebAPI.Controllers
         public CloudflareController(AppDbContext context, UserManager<ApplicationUser> userManager, IHubContext<WebRTCHub> hubContext)
         {
             this.context = context;
-            this._userManager = userManager;
-            this.cloudflareCallAppClient = new CloudflareCallAppClient();
-            this._hubContext = hubContext;
+            _userManager = userManager;
+            cloudflareCallAppClient = new CloudflareCallAppClient();
+            _hubContext = hubContext;
         }
 
         public class NewSessionRequest
@@ -58,8 +58,8 @@ namespace Template.WebAPI.Controllers
         {
             public string SessionId { get; set; } = null!;
             public List<string> Tracks { get; set; } = null!;
-            public string Sdp{ get; set; } = null!;
-            public bool Force {  get; set; }
+            public string Sdp { get; set; } = null!;
+            public bool Force { get; set; }
         }
 
         [HttpPut, Route("CloseTracks")]

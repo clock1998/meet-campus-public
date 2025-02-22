@@ -22,9 +22,9 @@ var config = builder.Configuration;
 var rsaKey = RSA.Create();
 if (!File.Exists("./key"))
 {
-    throw new FileNotFoundException("Cannot find private key.");
     //var privateKey = rsaKey.ExportRSAPrivateKey();
     //File.WriteAllBytes("key", privateKey);
+    throw new FileNotFoundException("Cannot find private key.");
 }
 rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
 #endregion

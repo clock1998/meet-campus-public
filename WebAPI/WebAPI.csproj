@@ -49,6 +49,7 @@
     <Folder Include="Features\UserProfiles\Query\" />
     <Folder Include="Images\" />
     <Folder Include="Infrastructure\Migrations\" />
+    <Folder Include="Infrastructure\Migrations\" />
   </ItemGroup>
 
   <ItemGroup>
