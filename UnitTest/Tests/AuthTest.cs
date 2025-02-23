@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WebAPI.Features.Auth.Command;
 
-namespace Test
+namespace Test.Tests
 {
     public class AuthTest : BaseIntegrationTest
     {
