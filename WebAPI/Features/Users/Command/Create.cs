@@ -2,14 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using WebAPI.Features.Auth;
+using WebAPI.Features.Email;
 using WebAPI.Features.UserProfiles;
-using WebAPI.Infrastructure.Helper;
 
 namespace WebAPI.Features.Users.Command
 {
     public sealed record CreateUserRequest(string Email, string Password, string PasswordConfirm, string FirstName, string LastName);
     public sealed record CreateUserResponse(Guid Id, int Year, string Name);
-    public class CreateUserHandler(AuthHandler _authHandler, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
+    public class CreateUserHandler(AuthHandler _authHandler)
     {
         public async Task<ApplicationUser> HandleAsync(CreateUserRequest request)
         {
@@ -41,7 +41,6 @@ namespace WebAPI.Features.Users.Command
                 var addToRoleResult = await _authHandler.UserManager.AddToRoleAsync(appUser, "Student");
                 if (addToRoleResult.Succeeded)
                 {
-                    await SendVerificationEmailAsync(appUser);
                     return appUser;
                 }
 
@@ -50,17 +49,6 @@ namespace WebAPI.Features.Users.Command
             }
 
             throw new InvalidOperationException(createResult.Errors.Select(e => e.Description).FirstOrDefault());
-        }
-
-        private async Task SendVerificationEmailAsync(ApplicationUser appUser)
-        {
-            var emailVerificationToken = await _authHandler.UserManager.GenerateEmailConfirmationTokenAsync(appUser);
-            var verificationUrl = linkGenerator.GetUriByName(httpContextAccessor.HttpContext!, "VerifyEmail", new { id = appUser.Id, token = emailVerificationToken.Base64Encode() });
-            if (appUser.UserName != null && appUser.Email != null && verificationUrl != null)
-            {
-                var message = new EmailService.Message(new Dictionary<string, string> { { appUser.UserName, appUser.Email } }, "Email Verification", verificationUrl);
-                _authHandler.EmailSender.SendEmail(message, "Meet Campus");
-            }
         }
     }
     public sealed class Validator : AbstractValidator<CreateUserRequest>
@@ -78,11 +66,13 @@ namespace WebAPI.Features.Users.Command
     public class CreateUserController : UserController
     {
         private readonly CreateUserHandler _handler;
+        private readonly SendVerificationEmailHandler _sendVerificationEmailHandler;
         private readonly IValidator<CreateUserRequest> _validator;
-        public CreateUserController(CreateUserHandler handler, IValidator<CreateUserRequest> validator)
+        public CreateUserController(CreateUserHandler handler, IValidator<CreateUserRequest> validator, SendVerificationEmailHandler sendVerificationEmailHandler)
         {
             _handler = handler;
             _validator = validator;
+            _sendVerificationEmailHandler = sendVerificationEmailHandler;
         }
         [HttpPost]
         [SwaggerOperation(Tags = new[] { "User" })]
@@ -98,8 +88,12 @@ namespace WebAPI.Features.Users.Command
             }
             try
             {
-                var result = await _handler.HandleAsync(request);
-                return Ok(result);
+                var user = await _handler.HandleAsync(request);
+                if(user is not null)
+                {
+                    await _sendVerificationEmailHandler.HandleAsync(user);
+                }
+                return Ok(user);
             }
             catch (Exception ex)
             {

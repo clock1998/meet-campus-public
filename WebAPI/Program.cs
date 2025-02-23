@@ -22,19 +22,19 @@ var config = builder.Configuration;
 var rsaKey = RSA.Create();
 if (!File.Exists("./key"))
 {
-    //var privateKey = rsaKey.ExportRSAPrivateKey();
-    //File.WriteAllBytes("key", privateKey);
-    throw new FileNotFoundException("Cannot find private key.");
+    var privateKey = rsaKey.ExportRSAPrivateKey();
+    File.WriteAllBytes("key", privateKey);
+    Log.Information("New RSA Key created");
 }
 rsaKey.ImportRSAPrivateKey(File.ReadAllBytes("key"), out _);
 #endregion
 
 #region Load multiple appsettings.json files
-builder.Configuration
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
+//builder.Configuration
+//    .SetBasePath(Directory.GetCurrentDirectory())
+//    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+//    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+//    .AddEnvironmentVariables();
 #endregion
 
 builder.Services.
@@ -137,3 +137,5 @@ finally
 {
     await Log.CloseAndFlushAsync();
 }
+
+public partial class Program { }

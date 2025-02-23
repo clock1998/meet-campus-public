@@ -1,6 +1,7 @@
 ﻿using WebAPI.Features.Auth;
 using WebAPI.Features.Auth.Command;
 using WebAPI.Features.Auth.Query;
+using WebAPI.Features.Email;
 using WebAPI.Features.UserProfiles.Command;
 using WebAPI.Features.Users.Command;
 using WebAPI.Features.Users.Query;
@@ -27,6 +28,7 @@ namespace WebAPI
             services.AddScoped<RegisterHandler>();
             services.AddScoped<RefreshHandler>();
             services.AddScoped<VerifyEmailHander>();
+            services.AddScoped<SendVerificationEmailHandler>();
             return services;
         }
     }

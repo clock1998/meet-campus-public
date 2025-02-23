@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using WebAPI.Features.Auth.Command;
 using WebAPI.Features.Auth.Query;
+using WebAPI.Features.Email;
 
 namespace WebAPI.Features.Auth
 {
@@ -12,7 +13,8 @@ namespace WebAPI.Features.Auth
         RegisterHandler _registerHandler, IValidator<RegisterRequest> _registerValidator,
         VerifyEmailHander _verifyEmailhandler, IValidator<VerifyEmailRequest> _verifyEmailValidator,
         LoginHandler _loginHandler, IValidator<LoginRequest> _loginRequestValidator, 
-        RefreshHandler _refreshHandler, IValidator<RefreshRequest> _refreshRequestValidator, ILogger<AuthController> logger
+        RefreshHandler _refreshHandler, IValidator<RefreshRequest> _refreshRequestValidator,
+        SendVerificationEmailHandler _sendVerificationEmailHandler, ILogger<AuthController> logger
         ) : ControllerBase
     {
         [HttpPost, Route("Login")]
@@ -49,7 +51,11 @@ namespace WebAPI.Features.Auth
             }
             try
             {
-                var result = await _registerHandler.HandleAsync(request);
+                var user = await _registerHandler.HandleAsync(request);
+                if(user is not null)
+                {
+                    await _sendVerificationEmailHandler.HandleAsync(user);
+                }
             }
             catch (Exception ex)
             {

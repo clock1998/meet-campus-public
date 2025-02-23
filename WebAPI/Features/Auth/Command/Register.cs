@@ -8,7 +8,7 @@ using WebAPI.Infrastructure.Helper;
 namespace WebAPI.Features.Auth.Command
 {
     public sealed record RegisterRequest(string Email, string Password, string PasswordConfirm, string FirstName, string LastName);
-    public class RegisterHandler(AuthHandler _authHandler, LinkGenerator linkGenerator, IHttpContextAccessor httpContextAccessor)
+    public class RegisterHandler(AuthHandler _authHandler)
     {
         public async Task<ApplicationUser> HandleAsync(RegisterRequest request)
         {
@@ -51,7 +51,6 @@ namespace WebAPI.Features.Auth.Command
                 var addToRoleResult = await _authHandler.UserManager.AddToRoleAsync(appUser, "Student");
                 if (addToRoleResult.Succeeded)
                 {
-                    await SendVerificationEmailAsync(appUser);
                     return appUser;
                 }
 
@@ -60,17 +59,6 @@ namespace WebAPI.Features.Auth.Command
             }
 
             throw new InvalidOperationException(createResult.Errors.Select(e => e.Description).FirstOrDefault());
-        }
-
-        private async Task SendVerificationEmailAsync(ApplicationUser appUser)
-        {
-            var emailVerificationToken = await _authHandler.UserManager.GenerateEmailConfirmationTokenAsync(appUser);
-            var verificationUrl = linkGenerator.GetUriByName(httpContextAccessor.HttpContext!, "VerifyEmail", new { id = appUser.Id, token = emailVerificationToken.Base64Encode() });
-            if (appUser.UserName != null && appUser.Email != null && verificationUrl != null)
-            {
-                var message = new Message(new Dictionary<string, string> { { appUser.UserName, appUser.Email } }, "Email Verification", verificationUrl);
-                _authHandler.EmailSender.SendEmail(message, "Meet Campus");
-            }
         }
     }
     public sealed class Validator : AbstractValidator<RegisterRequest>

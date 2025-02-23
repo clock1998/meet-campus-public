@@ -16,7 +16,7 @@ namespace WebAPI.Features.Auth
             _emailSender = emailSender;
         }
 
-        public IConfiguration Configuration {  get { return _configuration; } }
+        public IConfiguration Configuration { get { return _configuration; } }
         public UserManager<ApplicationUser> UserManager { get { return _userManager; } }
         public IEmailSender EmailSender { get { return _emailSender; } }
         public AppDbContext Context { get { return _context; } }

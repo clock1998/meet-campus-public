@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailService", "EmailServic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{8509019A-EF5F-4CD4-B0E6-E5C86C940336}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{3B6A8F3F-B08B-4D4B-89EF-2C7848E5FC05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "UnitTest\Test.csproj", "{3B6A8F3F-B08B-4D4B-89EF-2C7848E5FC05}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Client", "Client\Client.esproj", "{3E72F0D8-2352-4D1E-96DC-0CD05239954B}"
 EndProject
