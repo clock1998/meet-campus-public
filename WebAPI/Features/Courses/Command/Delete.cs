@@ -32,7 +32,7 @@ namespace WebAPI.Features.Courses.Command
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var result = await _handler.HandleAsync(id);
-            return CreatedAtAction("DeleteCourse", result);
+            return Ok(result);
         }
     }
 }

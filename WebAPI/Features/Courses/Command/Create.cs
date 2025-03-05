@@ -42,7 +42,7 @@ namespace WebAPI.Features.Courses.Command
         public async Task<IActionResult> Create([FromBody] CreateRequest request)
         {
             var result = await _handler.HandleAsync(request);
-            return CreatedAtAction("CreateCourse", result);
+            return Ok(result);
         }
     }
 }
