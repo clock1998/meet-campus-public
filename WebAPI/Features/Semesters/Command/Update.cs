@@ -34,7 +34,7 @@ namespace WebAPI.Features.Semesters.Command
         public async Task<IActionResult> Update([FromBody] UpdateSemesterRequest request)
         {
             var result = await _handler.HandleAsync(request);
-            return CreatedAtAction("CreateSemester", result);
+            return Ok(result);
         }
     }
 }

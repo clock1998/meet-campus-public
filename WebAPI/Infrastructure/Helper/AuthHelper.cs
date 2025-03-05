@@ -53,7 +53,7 @@ namespace WebAPI.Infrastructure.Helper
                 audience: jwtSettings["Audience"],
                 claims,
                 //expires: DateTime.UtcNow.AddSeconds(10),
-                expires: DateTime.UtcNow.AddHours(int.Parse(jwtSettings["exp"]!)),
+                expires: DateTime.UtcNow.AddHours(int.Parse(jwtSettings["TokenExp"]!)),
                 signingCredentials: new SigningCredentials(RsaKey, SecurityAlgorithms.RsaSha256)
             );
             var accessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);

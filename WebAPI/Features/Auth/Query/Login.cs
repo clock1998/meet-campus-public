@@ -19,14 +19,17 @@ namespace WebAPI.Features.Auth.Query
     public class LoginHandler
     {
         private readonly AuthHandler _authHandler;
-        public LoginHandler(AuthHandler authHandler)
+        private readonly IConfiguration _configuration;
+        public LoginHandler(AuthHandler authHandler, IConfiguration configuration)
         {
             _authHandler = authHandler;
+            _configuration = configuration;
         }
 
         public async Task<AppContextResponse> HandleAsync(LoginRequest request)
         {
             var user = await _authHandler.UserManager.FindByEmailAsync(request.Username);
+            var jwtSettings = _configuration.GetSection("Jwt");
             if (user != null)
             {
                 var result = await _authHandler.UserManager.CheckPasswordAsync(user, request.Password);
@@ -36,7 +39,7 @@ namespace WebAPI.Features.Auth.Query
                     if (isEmailConfirmed)
                     {
                         user.RefreshToken = AuthHelper.CreateRefreshToken();
-                        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(24);
+                        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(int.Parse(jwtSettings["RefreshTokenExp"]!));
                         await _authHandler.UserManager.UpdateAsync(user);
                         var roles = await _authHandler.UserManager.GetRolesAsync(user);
                         if (roles.Any())
