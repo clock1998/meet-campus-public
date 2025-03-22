@@ -1,6 +1,6 @@
-﻿namespace Template.WebAPI.Hubs
+﻿namespace WebAPI.Features.Chat
 {
-    public class HubConnections
+    public class ChatHubConnections
     {
         //userid = connectionid
         public static Dictionary<string, List<string>> Users = new();
@@ -51,9 +51,15 @@
             }
         }
 
-        public static List<string> OnlineUsers()
+        public static List<string> GetOnlineUsers()
         {
             return Users.Keys.ToList();
+        }
+
+
+        public static List<string> GetOnlineUserSessions(string userId)
+        {
+            return Users[userId];
         }
     }
 }

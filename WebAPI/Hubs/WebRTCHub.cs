@@ -58,103 +58,103 @@ namespace Template.WebAPI.Hubs
         //    return base.OnConnectedAsync();
         //}
 
-        public override Task OnDisconnectedAsync(Exception? exception)
-        {
-            var userId = Context.User?.FindFirstValue(ClaimTypes.Name);
-            var email = _context.Users.FirstOrDefault(n => n.Id.ToString() == userId)?.Email;
-            if (!string.IsNullOrEmpty(email) && HubConnections.HasUserConnection(email, Context.ConnectionId))
-            {
-                var userConnections = HubConnections.Users[email];
-                userConnections.Remove(Context.ConnectionId);
-                HubConnections.Users.Remove(email);
-            }
-            return base.OnDisconnectedAsync(exception);
-        }
+        //public override Task OnDisconnectedAsync(Exception? exception)
+        //{
+        //    var userId = Context.User?.FindFirstValue(ClaimTypes.Name);
+        //    var email = _context.Users.FirstOrDefault(n => n.Id.ToString() == userId)?.Email;
+        //    if (!string.IsNullOrEmpty(email) && HubConnections.HasUserConnection(email, Context.ConnectionId))
+        //    {
+        //        var userConnections = HubConnections.Users[email];
+        //        userConnections.Remove(Context.ConnectionId);
+        //        HubConnections.Users.Remove(email);
+        //    }
+        //    return base.OnDisconnectedAsync(exception);
+        //}
 
-        //User click button to join queue
-        public async Task JoinQueue()
-        {
-            var userId = Context.User?.FindFirstValue(ClaimTypes.Name);
-            var email = _context.Users.FirstOrDefault(n => n.Id.ToString() == userId)?.Email;
-            if (!string.IsNullOrEmpty(email))
-            {
-                HubConnections.AddUserConnection(email, Context.ConnectionId);
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-                await Clients.Group(groupName).QueueJoined(HubConnections.OnlineUsers());
-            }
-        }
-        public async Task AddIceCandidate(IceCandidate iceCandidate)
-        {
-            if (iceCandidate.IsMyOffer)
-            {
-                //this ice is coming from the offerer. Send to the answerer
-                var transaction = Transactions.FirstOrDefault(n => n.OfferUsername == iceCandidate.Email);
-                if (transaction != null)
-                {
-                    // 1. When the answerer answers, all existing ice candidates are sent
-                    // 2. Any candidates that come in after the offer has been answered, will be passed through
-                    transaction.OfferIceCandidates.Add(iceCandidate.Candiate);
-                    if (!string.IsNullOrEmpty(transaction.AnswerUsername))
-                    {
-                        //pass it through to the other socket
-                        var connectionId = HubConnections.Users[transaction.AnswerUsername].FirstOrDefault();
-                        if (!string.IsNullOrEmpty(connectionId))
-                        {
-                            await Clients.Client(connectionId).ReceivedIceCandidateFromServer(iceCandidate);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //this ice is coming from the answerer. Send to the offerer
-                //pass it through to the other socket
-                var transaction = Transactions.FirstOrDefault(n => n.AnswerUsername == iceCandidate.Email);
-                if (transaction != null)
-                {
-                    var connectionIds = HubConnections.Users[transaction.OfferUsername!];
-                    if (connectionIds != null && connectionIds.Any())
-                    {
-                        await Clients.Clients(connectionIds).ReceivedIceCandidateFromServer(iceCandidate);
-                    }
+        ////User click button to join queue
+        //public async Task JoinQueue()
+        //{
+        //    var userId = Context.User?.FindFirstValue(ClaimTypes.Name);
+        //    var email = _context.Users.FirstOrDefault(n => n.Id.ToString() == userId)?.Email;
+        //    if (!string.IsNullOrEmpty(email))
+        //    {
+        //        HubConnections.AddUserConnection(email, Context.ConnectionId);
+        //        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        //        await Clients.Group(groupName).QueueJoined(HubConnections.OnlineUsers());
+        //    }
+        //}
+        //public async Task AddIceCandidate(IceCandidate iceCandidate)
+        //{
+        //    if (iceCandidate.IsMyOffer)
+        //    {
+        //        //this ice is coming from the offerer. Send to the answerer
+        //        var transaction = Transactions.FirstOrDefault(n => n.OfferUsername == iceCandidate.Email);
+        //        if (transaction != null)
+        //        {
+        //            // 1. When the answerer answers, all existing ice candidates are sent
+        //            // 2. Any candidates that come in after the offer has been answered, will be passed through
+        //            transaction.OfferIceCandidates.Add(iceCandidate.Candiate);
+        //            if (!string.IsNullOrEmpty(transaction.AnswerUsername))
+        //            {
+        //                //pass it through to the other socket
+        //                var connectionId = HubConnections.Users[transaction.AnswerUsername].FirstOrDefault();
+        //                if (!string.IsNullOrEmpty(connectionId))
+        //                {
+        //                    await Clients.Client(connectionId).ReceivedIceCandidateFromServer(iceCandidate);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //this ice is coming from the answerer. Send to the offerer
+        //        //pass it through to the other socket
+        //        var transaction = Transactions.FirstOrDefault(n => n.AnswerUsername == iceCandidate.Email);
+        //        if (transaction != null)
+        //        {
+        //            var connectionIds = HubConnections.Users[transaction.OfferUsername!];
+        //            if (connectionIds != null && connectionIds.Any())
+        //            {
+        //                await Clients.Clients(connectionIds).ReceivedIceCandidateFromServer(iceCandidate);
+        //            }
                         
-                }
-            }
-        }
-        public async Task SendOffer(string offer)
-        {
-            var userId = Context.User?.FindFirstValue(ClaimTypes.Name);
-            var email = _context.Users.FirstOrDefault(n => n.Id.ToString() == userId)?.Email;
-            var newTransaction = new Transaction {OfferUsername = email, Offer = offer };
-            Transactions.Add(newTransaction);
-            //send to the group except myself.
-            await Clients.GroupExcept(groupName, HubConnections.Users[email]).NewOfferAwaiting(newTransaction);
-        }
+        //        }
+        //    }
+        //}
+        //public async Task SendOffer(string offer)
+        //{
+        //    var userId = Context.User?.FindFirstValue(ClaimTypes.Name);
+        //    var email = _context.Users.FirstOrDefault(n => n.Id.ToString() == userId)?.Email;
+        //    var newTransaction = new Transaction {OfferUsername = email, Offer = offer };
+        //    Transactions.Add(newTransaction);
+        //    //send to the group except myself.
+        //    await Clients.GroupExcept(groupName, HubConnections.Users[email]).NewOfferAwaiting(newTransaction);
+        //}
 
-        public async Task SendAnswer(string transactionInString)
-        {
-            Transaction transaction = JsonSerializer.Deserialize<Transaction>(transactionInString, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            })!;
-            var email = HubConnections.OnlineUsers().FirstOrDefault(n => n == transaction.OfferUsername);
-            var conntectIds = HubConnections.Users[email];
-            if (email == null && !conntectIds.Any())
-            {
-                return;
-            }
-            var transactionToUpdate = Transactions.FirstOrDefault(n => n.OfferUsername == transaction.OfferUsername);
-            if (transactionToUpdate == null)
-            {
-                return;
-            }
-            transactionToUpdate.Answer = transaction.Answer;
-            transactionToUpdate.AnswerUsername = transaction.AnswerUsername;
-            //send back the method caller icecandidates
-            await Clients.Caller.AnswererResponse(transactionToUpdate);
-            //send offerer transaction.
-            await Clients.Clients(conntectIds).AnswererResponse(transactionToUpdate);
-        }
+        //public async Task SendAnswer(string transactionInString)
+        //{
+        //    Transaction transaction = JsonSerializer.Deserialize<Transaction>(transactionInString, new JsonSerializerOptions
+        //    {
+        //        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        //    })!;
+        //    var email = HubConnections.OnlineUsers().FirstOrDefault(n => n == transaction.OfferUsername);
+        //    var conntectIds = HubConnections.Users[email];
+        //    if (email == null && !conntectIds.Any())
+        //    {
+        //        return;
+        //    }
+        //    var transactionToUpdate = Transactions.FirstOrDefault(n => n.OfferUsername == transaction.OfferUsername);
+        //    if (transactionToUpdate == null)
+        //    {
+        //        return;
+        //    }
+        //    transactionToUpdate.Answer = transaction.Answer;
+        //    transactionToUpdate.AnswerUsername = transaction.AnswerUsername;
+        //    //send back the method caller icecandidates
+        //    await Clients.Caller.AnswererResponse(transactionToUpdate);
+        //    //send offerer transaction.
+        //    await Clients.Clients(conntectIds).AnswererResponse(transactionToUpdate);
+        //}
 
         //when a room is selected, we call add to room
         //public async Task AddToRoom(string roomId)

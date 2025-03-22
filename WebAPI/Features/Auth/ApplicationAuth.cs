@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
+using WebAPI.Features.Chat.ChatMessage;
+using WebAPI.Features.Chat.ChatRoom;
 using WebAPI.Features.Courses;
-using WebAPI.Features.Messages;
 using WebAPI.Features.UserProfiles;
 using WebAPI.Infrastructure.Helper;
 
@@ -25,6 +26,7 @@ namespace WebAPI.Features.Auth
         public virtual ICollection<ApplicationUserRole> UserRoles { get; set; } = new List<ApplicationUserRole>();
         public virtual ICollection<Course> Courses { set; get; } = new List<Course>();
         public virtual ICollection<Message> Messages { set; get; } = new List<Message>();
+        public virtual ICollection<Room> Rooms { set; get; } = new List<Room>();
     }
 
     public class ApplicationRole : IdentityRole<Guid>
