@@ -369,3 +369,4 @@ client/src/assets/images/*.mp4
 /WebAPI/key
 /WebAPI/appsettings.json
 /WebAPI/appsettings.Production.json
+/WebAPI/Infrastructure/Context/Seed.cs
