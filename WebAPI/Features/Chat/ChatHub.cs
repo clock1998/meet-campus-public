@@ -41,8 +41,8 @@ namespace WebAPI.Features.Chat
                 var user = _context.Users.FirstOrDefault(n => n.Id == Guid.Parse(userId));
                 if (user != null)
                 {
-                    var userName = user.UserName;
-                    Clients.Users(ChatHubConnections.GetOnlineUsers()).SendAsync("ReceiveUserConnected", userId, userName);
+                    var username = user.UserName;
+                    Clients.Users(ChatHubConnections.GetOnlineUsers()).SendAsync("ReceiveUserConnected", userId, username);
                     ChatHubConnections.AddUserConnection(userId, Context.ConnectionId);
                 }
             }
