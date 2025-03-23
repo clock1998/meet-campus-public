@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
-using Template.WebAPI.Hubs;
 using WebAPI.Features.Chat.ChatMessage.Command;
 using WebAPI.Features.Chat.ChatRoom;
 using WebAPI.Features.Chat.ChatRoom.Command;

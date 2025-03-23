@@ -1,7 +1,6 @@
 using Serilog;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
-using Template.WebAPI.Hubs;
 using Microsoft.Extensions.FileProviders;
 using EmailService;
 using System.Security.Cryptography;
