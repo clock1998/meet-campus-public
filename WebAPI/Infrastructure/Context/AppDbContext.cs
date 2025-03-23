@@ -52,8 +52,8 @@ namespace WebAPI.Infrastructure.Context
                 .HasMany(e => e.Rooms)
                 .WithMany(e => e.ApplicationUsers)
                 .UsingEntity<RoomUser>(
-                l => l.HasOne<Room>().WithMany().HasForeignKey(e => e.RoomId),
-                r => r.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId));
+                l => l.HasOne<Room>(n=>n.Room).WithMany().HasForeignKey(e => e.RoomId),
+                r => r.HasOne<ApplicationUser>(n=>n.User).WithMany().HasForeignKey(e => e.UserId));
 
             builder.Entity<Email>()
             .HasIndex(b => b.EmailAdress)
