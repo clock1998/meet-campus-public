@@ -14,6 +14,7 @@ using WebAPI.Infrastructure.Exceptions;
 using WebAPI;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
+using WebAPI.Features.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -102,8 +103,9 @@ try
     }
 
     app.UseHttpsRedirection();
-    app.MapHub<WebRTCHub>("/hubs/chat");
-    app.MapHub<CloudflareHub>("/hubs/cloudflare");
+    //app.MapHub<WebRTCHub>("/hubs/chat");
+    //app.MapHub<CloudflareHub>("/hubs/cloudflare");
+    app.MapHub<ChatHub>("/hubs/chat");
     
     // Define the path to the Images directory
     var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
