@@ -1,6 +1,6 @@
 ﻿using static Core.CloudflareCallAppClient;
 
-namespace Template.WebAPI.Hubs
+namespace WebAPI.Features.Cloudflare
 {
     public class CloudflareConnections
     {

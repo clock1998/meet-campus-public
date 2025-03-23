@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using System.Text.Json;
-using static Template.WebAPI.Hubs.WebRTCHub;
+using static WebAPI.Features.Cloudflare.WebRTCHub;
 using WebAPI.Infrastructure.Context;
-namespace Template.WebAPI.Hubs
+namespace WebAPI.Features.Cloudflare
 {
     public interface IChatClient
     {

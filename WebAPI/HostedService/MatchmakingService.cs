@@ -3,8 +3,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using Template.WebAPI.Hubs;
 using System.Text.RegularExpressions;
+using WebAPI.Features.Cloudflare;
 
 namespace Template.WebAPI.HostedService
 {

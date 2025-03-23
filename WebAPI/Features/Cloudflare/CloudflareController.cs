@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using Template.WebAPI.Hubs;
 using Core;
 using WebAPI.Infrastructure.Context;
 using WebAPI.Features.Auth;

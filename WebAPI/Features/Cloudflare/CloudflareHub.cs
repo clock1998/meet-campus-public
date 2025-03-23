@@ -5,7 +5,7 @@ using System.Security.Claims;
 using Core;
 using static Core.CloudflareCallAppClient;
 using WebAPI.Infrastructure.Context;
-namespace Template.WebAPI.Hubs
+namespace WebAPI.Features.Cloudflare
 {
     public interface ICloudflareClient
     {
