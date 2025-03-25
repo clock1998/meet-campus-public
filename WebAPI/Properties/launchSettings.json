@@ -30,13 +30,15 @@
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:5000;http://localhost:5089"
     },
-    "IIS Express": {
-      "commandName": "IISExpress",
+    "expo": {
+      "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://192.168.1.251:5089"
     },
     "Container (Dockerfile)": {
       "commandName": "Docker",
