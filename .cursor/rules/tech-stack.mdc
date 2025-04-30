@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Technical stack
+- ASP.NET for the backend
+- React Native for the frontend
+- SQL databases
