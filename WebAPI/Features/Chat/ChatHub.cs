@@ -41,8 +41,8 @@ namespace WebAPI.Features.Chat
                 if (user != null)
                 {
                     var username = user.UserName;
-                    Clients.Users(ChatHubConnections.GetOnlineUsers()).SendAsync("UserConnectedHandler", userId, username);
                     ChatHubConnections.AddUserConnection(userId, Context.ConnectionId);
+                    Clients.Users(ChatHubConnections.GetOnlineUsers()).SendAsync("UserConnectedHandler", userId, username);
                 }
             }
             return base.OnConnectedAsync();

@@ -3,15 +3,15 @@
     public class ChatHubConnections
     {
         //userid = connectionid
-        public static Dictionary<string, List<string>> Users = new();
+        private static Dictionary<string, List<string>> _users = new();
 
-        public static bool HasUserConnection(string UserId, string ConnectionId)
+        public static bool HasUserConnection(string userId, string connectionId)
         {
             try
             {
-                if (Users.ContainsKey(UserId))
+                if (_users.TryGetValue(userId, out var user))
                 {
-                    return Users[UserId].Any(p => p.Contains(ConnectionId));
+                    return user.Any(p => p.Contains(connectionId));
                 }
             }
             catch (Exception ex)
@@ -22,13 +22,13 @@
             return false;
         }
 
-        public static bool HasUser(string UserId)
+        public static bool HasUser(string userId)
         {
             try
             {
-                if (Users.ContainsKey(UserId))
+                if (_users.TryGetValue(userId, out var user))
                 {
-                    return Users[UserId].Any();
+                    return user.Any();
                 }
             }
             catch (Exception ex)
@@ -39,27 +39,26 @@
             return false;
         }
 
-        public static void AddUserConnection(string UserId, string ConnectionId)
+        public static void AddUserConnection(string userId, string connectionId)
         {
-
-            if (!string.IsNullOrEmpty(UserId) && !HasUserConnection(UserId, ConnectionId))
+            if (!string.IsNullOrEmpty(userId) && !HasUserConnection(userId, connectionId))
             {
-                if (Users.ContainsKey(UserId))
-                    Users[UserId].Add(ConnectionId);
+                if (_users.ContainsKey(userId))
+                    _users[userId].Add(connectionId);
                 else
-                    Users.Add(UserId, new List<string> { ConnectionId });
+                    _users.Add(userId, [connectionId]);
             }
         }
 
         public static List<string> GetOnlineUsers()
         {
-            return Users.Keys.ToList();
+            return _users.Keys.ToList();
         }
 
 
         public static List<string> GetOnlineUserSessions(string userId)
         {
-            return Users[userId];
+            return _users[userId];
         }
     }
 }
