@@ -1,4 +1,6 @@
 import { baseApiUrl, postOptions } from "./base";
+import { UserSession } from "@/context/AuthContext";
+
 export interface ApiError extends Error{
     detail:string,
     instance:string,
@@ -8,7 +10,13 @@ export interface ApiError extends Error{
     traceId:string,
     type:string,
 }
-export async function login(data:any) {
+
+export interface LoginCredentials {
+    username: string;
+    password: string;
+}
+
+export async function login(data: LoginCredentials): Promise<UserSession> {
     postOptions.body = JSON.stringify(data)
     const response = await fetch(`${baseApiUrl}/Auth/Login`, postOptions);
     if (!response.ok) {
@@ -18,7 +26,7 @@ export async function login(data:any) {
     return await response.json();
 }
 
-export async function refresh(data:any) {
+export async function refresh(data: { refreshToken: string }): Promise<UserSession> {
     postOptions.body = JSON.stringify(data)
     const response = await fetch(`${baseApiUrl}/Auth/RefreshToken`, postOptions);
     if (!response.ok) {

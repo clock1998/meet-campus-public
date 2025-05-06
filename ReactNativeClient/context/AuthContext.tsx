@@ -1,12 +1,13 @@
 import { useContext, createContext, type PropsWithChildren } from 'react';
 import { useStorageState } from './UseStorageState';
 
-interface UserSession {
+
+export interface UserSession {
     refreshToken: string;
     token: string;
     user: User;
 }
-interface User{
+export interface User{
     email:string;
     firstName:string;
     lastName:string;
@@ -14,12 +15,12 @@ interface User{
     roles:string[];
 }
 const AuthContext = createContext<{
-    signIn: (data: any) => void;
+    signIn: (data: UserSession) => void;
     signOut: () => void;
     userSession: UserSession | null;
     isLoading: boolean;
 }>({
-    signIn: (data:any) => null,
+    signIn: (data:UserSession) => null,
     signOut: () => null,
     userSession: null,
     isLoading: false,
@@ -45,7 +46,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     return (
         <AuthContext.Provider
             value={{
-                signIn: (data: any) => {
+                signIn: (data: UserSession) => {
                     // Perform sign-in logic here
                     setSession(JSON.stringify(data));           
                 },
