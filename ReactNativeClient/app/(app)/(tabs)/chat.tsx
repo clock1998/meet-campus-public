@@ -1,49 +1,147 @@
-import { useSession } from '@/context/AuthContext';
+import { User, useSession } from '@/context/AuthContext';
 import { SignalRService } from '@/services/signalRService';
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator } from 'react-native';
 
 export default function ChatScreen() {
   const { userSession } = useSession();
-  const [user, setUser] = useState<{ userId: string; username: string }>();
-  const [messages, setMessages] = useState<{ userId: string; username: string }[]>([]);
-  const signalRService = new SignalRService(userSession!.token);
+  const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const signalRServiceRef = useRef<SignalRService | null>(null);
 
   useEffect(() => {
-    let connection = signalRService.connect();
-    signalRService.onUserConnected((userId: string, username: string) => {
-      setUser({ userId, username });
-      // setMessages(prev => [...prev, { userId, username }]);
-    });
-    // Clean up the event listener on unmount
+    if (!userSession?.token) return;
+
+    try {
+      setIsConnecting(true);
+      signalRServiceRef.current = new SignalRService(userSession.token);
+      
+      // Set up user connection handlers
+      signalRServiceRef.current.onUserConnected((message: string) => {
+        
+      });
+      signalRServiceRef.current!.getOnlineUsers((users:User[])=>{
+        setConnectedUsers(users);
+      });
+        
+      signalRServiceRef.current.onUserDisconnected((users:User[]) => {
+        setConnectedUsers(users);
+      });
+
+      // Connect to SignalR
+      signalRServiceRef.current.connect();
+    } catch (error) {
+      console.error('Failed to initialize SignalR:', error);
+      Alert.alert('Connection Error', 'Failed to connect to chat server');
+    } finally {
+      setIsConnecting(false);
+    }
+
+    // Cleanup on unmount
     return () => {
-      connection?.stop();
+      if (signalRServiceRef.current) {
+        signalRServiceRef.current.disconnect();
+      }
     };
-  }, []);
+  }, [userSession?.token]);
+
+  if (isConnecting) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Connecting to chat server...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Chat Screen</Text>
-      <Text style={styles.title}>{user?.userId} {user?.username}</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Online Users</Text>
+      </View>
+
       <FlatList
-        data={messages}
-        keyExtractor={(_, index) => index.toString()}
+        style={styles.userList}
+        data={connectedUsers}
+        keyExtractor={(item) => item.email}
         renderItem={({ item }) => (
-          <Text>{`${item.userId}: ${item.username}`}</Text>
+          <View style={styles.userContainer}>
+            <Text style={styles.username}>{item.email}</Text>
+            <View style={styles.onlineIndicator} />
+          </View>
         )}
-      />
-      <Button
-        title="Send Test Message"
-        onPress={() => {
-          // Example of sending a message; adjust according to your ChatHub method
-          signalRService?.sendMessageToRoom({userId: user!.userId, roomId: user!.userId, content: "Tes"})
-        }}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No users online</Text>
+          </View>
+        }
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 24, marginBottom: 20 }
+  container: { 
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  header: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  title: { 
+    fontSize: 24, 
+    fontWeight: 'bold',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 5,
+  },
+  userList: {
+    flex: 1,
+    padding: 10,
+  },
+  userContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: '500',
+    flex: 1,
+  },
+  onlineIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#4CAF50',
+    marginLeft: 10,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+  }
 });

@@ -23,7 +23,10 @@ namespace WebAPI.Features.Chat
 
         public static int ActiveUsers { get; set; } = 0;
         public static string Room { get; set; } = "";
-        public ChatHub(AppDbContext context, CreateMessagesHandler createMessageHandler, DeleteMessagesHandler deleteMessagesHandler, CreateRoomHandler createRoomHandler, DeleteRoomHandler deleteRoomHandler)
+
+        public ChatHub(AppDbContext context, CreateMessagesHandler createMessageHandler,
+            DeleteMessagesHandler deleteMessagesHandler, CreateRoomHandler createRoomHandler,
+            DeleteRoomHandler deleteRoomHandler)
         {
             _context = context;
             _createMessageHandler = createMessageHandler;
@@ -35,31 +38,33 @@ namespace WebAPI.Features.Chat
         public override Task OnConnectedAsync()
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!string.IsNullOrEmpty(userId))
+            var user = _context.Users.FirstOrDefault(n => userId != null && n.Id == Guid.Parse(userId));
+
+            if (user != null)
             {
-                var user = _context.Users.FirstOrDefault(n => n.Id == Guid.Parse(userId));
-                if (user != null)
-                {
-                    var username = user.UserName;
-                    ChatHubConnections.AddUserConnection(userId, Context.ConnectionId);
-                    Clients.Users(ChatHubConnections.GetOnlineUsers()).SendAsync("UserConnectedHandler", userId, username);
-                }
+                var username = user.UserName;
+                ChatHubConnections.AddUserConnection(user, Context.ConnectionId);
+                Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
+                    .SendAsync("UserConnectedHandler", $"{username} is connected.");
+                Clients.Caller.SendAsync("UsersConnectedHandler", ChatHubConnections.GetOnlineUsers());
             }
+
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!string.IsNullOrEmpty(userId) && ChatHubConnections.HasUserConnection(userId, Context.ConnectionId))
+            var user = _context.Users.FirstOrDefault(n => userId != null && n.Id == Guid.Parse(userId));
+            if (user != null && ChatHubConnections.HasUserConnection(user, Context.ConnectionId))
             {
                 //Remove Disconnected user session.
-                var userConnections = ChatHubConnections.GetOnlineUserSessions(userId);
+                var userConnections = ChatHubConnections.GetOnlineUserSessions(user);
                 userConnections.Remove(Context.ConnectionId);
-                //Notify other users 
-                var userName = _context.Users.FirstOrDefault(n => n.Id == Guid.Parse(userId))?.UserName;
-                Clients.Users(ChatHubConnections.GetOnlineUsers()).SendAsync("UserDisconnectedHandler", userId, userName, ChatHubConnections.HasUser(userId));
+                Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
+                    .SendAsync("UserDisconnectedHandler", ChatHubConnections.GetOnlineUsers());
             }
+
             return base.OnDisconnectedAsync(exception);
         }
 
@@ -68,12 +73,15 @@ namespace WebAPI.Features.Chat
         {
             var room = await _createRoomHandler.HandleAsync(request);
             await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString());
-            await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler", $"{Context.ConnectionId} has joined the group {room.Id}.");
+            await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
+                $"{Context.ConnectionId} has joined the group {room.Id}.");
         }
+
         public async Task AddToRoom(string roomId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
-            await Clients.Group(roomId).SendAsync("AddToRoomHandler", $"{Context.ConnectionId} has joined the group {roomId}.");
+            await Clients.Group(roomId)
+                .SendAsync("AddToRoomHandler", $"{Context.ConnectionId} has joined the group {roomId}.");
         }
 
         public async Task SendMessageToRoom(CreateMessageRequest request)
@@ -81,7 +89,9 @@ namespace WebAPI.Features.Chat
             await Clients.Group(request.RoomId.ToString()).SendAsync("SendMessageToRoomHandler", request);
             await _createMessageHandler.HandleAsync(request);
         }
+
         public record DeleteRoomRequest(Guid RoomId, Guid UserId);
+
         public async Task DeleteRoom(DeleteRoomRequest request)
         {
             var room = await _context.Rooms.FindAsync(request.RoomId);
@@ -91,13 +101,15 @@ namespace WebAPI.Features.Chat
                 {
                     room.ApplicationUsers.Remove(new Auth.ApplicationUser { Id = request.UserId });
                     await Groups.RemoveFromGroupAsync(Context.ConnectionId, request.RoomId.ToString());
-                    await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler", $"{Context.ConnectionId} has left the group {request.RoomId.ToString()}.");
+                    await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler",
+                        $"{Context.ConnectionId} has left the group {request.RoomId.ToString()}.");
                 }
                 else
                 {
                     _context.Rooms.Remove(room);
                 }
-                await _context.SaveChangesAsync(); 
+
+                await _context.SaveChangesAsync();
             }
         }
     }

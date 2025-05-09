@@ -1,17 +1,19 @@
-﻿namespace WebAPI.Features.Chat
+﻿using WebAPI.Features.Auth;
+
+namespace WebAPI.Features.Chat
 {
     public class ChatHubConnections
     {
         //userid = connectionid
-        private static Dictionary<string, List<string>> _users = new();
+        private static Dictionary<ApplicationUser, List<string>> _users = new();
 
-        public static bool HasUserConnection(string userId, string connectionId)
+        public static bool HasUserConnection(ApplicationUser user, string connectionId)
         {
             try
             {
-                if (_users.TryGetValue(userId, out var user))
+                if (_users.TryGetValue(user, out var appUser))
                 {
-                    return user.Any(p => p.Contains(connectionId));
+                    return appUser.Any(p => p.Contains(connectionId));
                 }
             }
             catch (Exception ex)
@@ -22,13 +24,13 @@
             return false;
         }
 
-        public static bool HasUser(string userId)
+        public static bool HasUser(ApplicationUser user)
         {
             try
             {
-                if (_users.TryGetValue(userId, out var user))
+                if (_users.TryGetValue(user, out var appUser))
                 {
-                    return user.Any();
+                    return appUser.Any();
                 }
             }
             catch (Exception ex)
@@ -39,26 +41,26 @@
             return false;
         }
 
-        public static void AddUserConnection(string userId, string connectionId)
+        public static void AddUserConnection(ApplicationUser user, string connectionId)
         {
-            if (!string.IsNullOrEmpty(userId) && !HasUserConnection(userId, connectionId))
+            if (!HasUserConnection(user, connectionId))
             {
-                if (_users.ContainsKey(userId))
-                    _users[userId].Add(connectionId);
+                if (_users.ContainsKey(user))
+                    _users[user].Add(connectionId);
                 else
-                    _users.Add(userId, [connectionId]);
+                    _users.Add(user, [connectionId]);
             }
         }
 
-        public static List<string> GetOnlineUsers()
+        public static List<ApplicationUser> GetOnlineUsers()
         {
             return _users.Keys.ToList();
         }
 
 
-        public static List<string> GetOnlineUserSessions(string userId)
+        public static List<string> GetOnlineUserSessions(ApplicationUser user)
         {
-            return _users[userId];
+            return _users[user];
         }
     }
 }

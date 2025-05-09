@@ -1,4 +1,5 @@
 import { baseUrl } from '@/apis/base';
+import { User } from '@/context/AuthContext';
 import { HubConnectionBuilder, LogLevel, HubConnection } from '@microsoft/signalr';
 
 export interface CreateMessageRequest {
@@ -7,45 +8,69 @@ export interface CreateMessageRequest {
   content: string;
 }
 
+export interface CreateRoomRequest {
+  userIds: string[];
+}
+
 export class SignalRService {
-  private connection: HubConnection | null = null;
+  private connection: HubConnection;
   private token: string;
 
   constructor(token: string) {
     this.token = token;
+    this.connection = new HubConnectionBuilder()
+      .withUrl(`${baseUrl}/hubs/chat`, {
+        accessTokenFactory: () => this.token,
+      })
+      .configureLogging(LogLevel.Information)
+      .withAutomaticReconnect()
+      .build();
   }
 
-  public connect(): HubConnection {
-    if (!this.connection) {
-      this.connection = new HubConnectionBuilder()
-        .withUrl(`${baseUrl}/hubs/chat`, {
-          accessTokenFactory: () => this.token,
-        })
-        .configureLogging(LogLevel.Information)
-        .withAutomaticReconnect()
-        .build();
-      
-      this.connection
-      .start()
-      .then(()=>{console.log('Connected to ChatHub')})
-      .catch((err)=>{console.error('Error connecting to ChatHub:', err);})
+  public async connect(): Promise<HubConnection> {
+    try {
+      await this.connection.start();
+      console.log('Connected to ChatHub');
+      return this.connection;
+    } catch (err) {
+      console.error('Error connecting to ChatHub:', err);
+      throw err;
     }
-    return this.connection;
   }
 
-  public onUserConnected(callback: (userId: string, username: string) => void): void {
-    this.connection?.on('UserConnectedHandler', callback);
+  public onUserConnected(callback: (message:string) => void): void {
+    this.connection.on('UserConnectedHandler', callback);
+  }
+  public getOnlineUsers(callback: (user:User[]) => void): void {
+    this.connection.on('UsersConnectedHandler', callback);
+  }
+  public onUserDisconnected(callback: (user:User[]) => void): void {
+    this.connection.on('UserDisconnectedHandler', callback);
   }
 
-  public createRoom(roomId: string): void {
-    this.connection
-      ?.invoke('CreateRoomHandler', roomId)
-      .catch(err => console.error(err));
+  public createRoomHandler(callback: (message: string) => void): void {
+    this.connection.on('CreateRoomHandler', callback);
   }
 
-  public sendMessageToRoom(request: CreateMessageRequest): void {
-    this.connection
-      ?.invoke('SendMessageToRoomHandler', request)
-      .catch(err => console.error(err));
+  public async createRoom(request: CreateRoomRequest): Promise<void> {
+    try {
+      await this.connection.invoke('CreateRoom', request);
+    } catch (err) {
+      console.error('Error creating room:', err);
+      throw err;
+    }
+  }
+
+  public async sendMessageToRoom(request: CreateMessageRequest): Promise<void> {
+    try {
+      await this.connection.invoke('SendMessageToRoomHandler', request);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      throw err;
+    }
+  }
+
+  public async disconnect(): Promise<void> {
+    await this.connection.stop();
   }
 }

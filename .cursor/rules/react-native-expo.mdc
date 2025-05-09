@@ -16,7 +16,8 @@ const reactNativeExpoBestPractices = [
   "Utilize Expo's push notification system",
   "Utilize React Hook form for creating forms",
   "Utilize React Query for fetching data",
-  "Utilize Microsoft Signalr for realtime communication"
+  "Utilize Microsoft Signalr for realtime communication",
+  "Utilize Shopify flash list to replace react native flat list "
 ];
 
 // Folder structure

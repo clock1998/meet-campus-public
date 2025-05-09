@@ -27,6 +27,20 @@ namespace WebAPI.Features.Auth
         public virtual ICollection<Course> Courses { set; get; } = new List<Course>();
         public virtual ICollection<Message> Messages { set; get; } = new List<Message>();
         public virtual ICollection<Room> Rooms { set; get; } = new List<Room>();
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null) { return false; }
+            if (obj.GetType() != GetType()) { return false; }
+            if (obj is not ApplicationUser entity) { return false; }
+            return entity.Id == Id;
+        }
+
     }
 
     public class ApplicationRole : IdentityRole<Guid>
