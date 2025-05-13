@@ -368,3 +368,4 @@ client/src/assets/images/*.mp4
 /WebAPI/appsettings.Production.json
 /WebAPI/Infrastructure/Context/Seed.cs
 .idea/.idea.MeetCampus/.idea/dataSources.xml
+.idea/**
