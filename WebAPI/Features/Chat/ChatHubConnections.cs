@@ -4,9 +4,8 @@ namespace WebAPI.Features.Chat
 {
     public class ChatHubConnections
     {
-        //userid = connectionid
         private static Dictionary<ApplicationUser, List<string>> _users = new();
-
+        
         public static bool HasUserConnection(ApplicationUser user, string connectionId)
         {
             try
@@ -61,6 +60,11 @@ namespace WebAPI.Features.Chat
         public static List<string> GetOnlineUserSessions(ApplicationUser user)
         {
             return _users[user];
+        }
+        
+        public static List<string> GetOnlineUserSessions(Guid userId)
+        {
+            return _users[new ApplicationUser(){Id = userId}];
         }
     }
 }

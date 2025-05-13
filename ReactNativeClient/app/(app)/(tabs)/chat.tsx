@@ -1,13 +1,15 @@
 import { User, useSession } from '@/context/AuthContext';
 import { SignalRService } from '@/services/signalRService';
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function ChatScreen() {
   const { userSession } = useSession();
   const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const signalRServiceRef = useRef<SignalRService | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!userSession?.token) return;
@@ -18,14 +20,21 @@ export default function ChatScreen() {
       
       // Set up user connection handlers
       signalRServiceRef.current.onUserConnected((message: string) => {
-        
+        console.log('User connected:', message);
       });
-      signalRServiceRef.current!.getOnlineUsers((users:User[])=>{
+
+      signalRServiceRef.current.getOnlineUsers((users: User[]) => {
         setConnectedUsers(users);
       });
         
-      signalRServiceRef.current.onUserDisconnected((users:User[]) => {
+      signalRServiceRef.current.onUserDisconnected((users: User[]) => {
         setConnectedUsers(users);
+      });
+
+      // Set up room creation handler
+      signalRServiceRef.current.createRoomHandler((roomId: string) => {
+        console.log('Room created:', roomId);
+        router.push(`/chat/${roomId}`);
       });
 
       // Connect to SignalR
@@ -43,7 +52,20 @@ export default function ChatScreen() {
         signalRServiceRef.current.disconnect();
       }
     };
-  }, [userSession?.token]);
+  }, [userSession?.token, router]);
+
+  const handleUserPress = async (selectedUser: User) => {
+    if (!signalRServiceRef.current || !userSession?.user) return;
+
+    try {
+      await signalRServiceRef.current.createRoom({
+        userIds: [userSession.user.id, selectedUser.id]
+      });
+    } catch (error) {
+      console.error('Failed to create room:', error);
+      Alert.alert('Error', 'Failed to create chat room');
+    }
+  };
 
   if (isConnecting) {
     return (
@@ -65,10 +87,13 @@ export default function ChatScreen() {
         data={connectedUsers}
         keyExtractor={(item) => item.email}
         renderItem={({ item }) => (
-          <View style={styles.userContainer}>
+          <TouchableOpacity 
+            style={styles.userContainer}
+            onPress={() => handleUserPress(item)}
+          >
             <Text style={styles.username}>{item.email}</Text>
             <View style={styles.onlineIndicator} />
-          </View>
+          </TouchableOpacity>
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -104,11 +129,6 @@ const styles = StyleSheet.create({
   title: { 
     fontSize: 24, 
     fontWeight: 'bold',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 5,
   },
   userList: {
     flex: 1,

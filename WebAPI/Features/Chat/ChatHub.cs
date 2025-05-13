@@ -72,12 +72,19 @@ namespace WebAPI.Features.Chat
         public async Task CreateRoom(CreateRoomRequest request)
         {
             var room = await _createRoomHandler.HandleAsync(request);
-            await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString());
+            foreach (var userId in request.UserIds.Distinct())
+            {
+                var connectionIds = ChatHubConnections.GetOnlineUserSessions(userId);
+                foreach (var connectionId in connectionIds)
+                {
+                    await Groups.AddToGroupAsync(connectionId, room.Id.ToString());    
+                }
+            }
             await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
-                $"{Context.ConnectionId} has joined the group {room.Id}.");
+                $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }
 
-        public async Task AddToRoom(string roomId)
+        public async Task JoinRoom(string roomId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
             await Clients.Group(roomId)
@@ -95,22 +102,34 @@ namespace WebAPI.Features.Chat
         public async Task DeleteRoom(DeleteRoomRequest request)
         {
             var room = await _context.Rooms.FindAsync(request.RoomId);
-            if (room != null)
+            if (room == null)
             {
-                if (room.ApplicationUsers.Any())
-                {
-                    room.ApplicationUsers.Remove(new Auth.ApplicationUser { Id = request.UserId });
-                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, request.RoomId.ToString());
-                    await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler",
-                        $"{Context.ConnectionId} has left the group {request.RoomId.ToString()}.");
-                }
-                else
-                {
-                    _context.Rooms.Remove(room);
-                }
-
-                await _context.SaveChangesAsync();
+                await Clients.Caller.SendAsync("DeleteRoomHandler", "Room not found.");
+                return;
             }
+        
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId != request.UserId.ToString())
+            {
+                await Clients.Caller.SendAsync("DeleteRoomHandler", "Unauthorized to delete this room.");
+                return;
+            }
+        
+            if (room.ApplicationUsers.Any())
+            {
+                room.ApplicationUsers.Remove(new Auth.ApplicationUser { Id = request.UserId });
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, request.RoomId.ToString());
+                await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler",
+                    $"{Context.ConnectionId} has left the group {request.RoomId}.");
+            }
+            else
+            {
+                _context.Rooms.Remove(room);
+                await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler",
+                    $"Room {request.RoomId} has been deleted.");
+            }
+        
+            await _context.SaveChangesAsync();
         }
     }
 }
