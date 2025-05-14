@@ -93,8 +93,8 @@ namespace WebAPI.Features.Chat
 
         public async Task SendMessageToRoom(CreateMessageRequest request)
         {
-            await Clients.Group(request.RoomId.ToString()).SendAsync("SendMessageToRoomHandler", request);
-            await _createMessageHandler.HandleAsync(request);
+            var message = await _createMessageHandler.HandleAsync(request);
+            await Clients.Group(request.RoomId.ToString()).SendAsync("SendMessageToRoomHandler", message);
         }
 
         public record DeleteRoomRequest(Guid RoomId, Guid UserId);

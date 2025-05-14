@@ -8,6 +8,14 @@ export interface CreateMessageRequest {
   content: string;
 }
 
+export interface CreateMessageResponse{
+  id: string;
+  content: string;
+  username: string;
+  created: Date;
+  updated: Date;
+}
+
 export interface CreateRoomRequest {
   userIds: string[];
 }
@@ -52,6 +60,7 @@ export class SignalRService {
     this.connection.on('CreateRoomHandler', callback);
   }
 
+
   public async createRoom(request: CreateRoomRequest): Promise<void> {
     try {
       await this.connection.invoke('CreateRoom', request);
@@ -59,6 +68,10 @@ export class SignalRService {
       console.error('Error creating room:', err);
       throw err;
     }
+  }
+
+  public sendMessageToRoomHandler (callback: (request: CreateMessageResponse) => void ): void {
+    this.connection.on('SendMessageToRoomHandler', callback);
   }
 
   public async sendMessageToRoom(request: CreateMessageRequest): Promise<void> {

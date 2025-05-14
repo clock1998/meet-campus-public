@@ -34,7 +34,10 @@ export default function ChatScreen() {
       // Set up room creation handler
       signalRServiceRef.current.createRoomHandler((roomId: string) => {
         console.log('Room created:', roomId);
-        router.push(`/chat/${roomId}`);
+        router.push({
+          pathname: '/(app)/chat/[id]',
+          params: { id: roomId }
+        });
       });
 
       // Connect to SignalR

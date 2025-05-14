@@ -8,16 +8,10 @@ using WebAPI.Infrastructure.Context;
 namespace WebAPI.Features.Chat.ChatMessage.Command
 {
     public sealed record CreateMessageRequest(Guid UserId, Guid RoomId, string Content);
-    public sealed record CreateResponse(Guid Id, string Content, string Username);
-    public class CreateMessagesHandler
+    public sealed record CreateMessageResponse(Guid Id, string Content, string Username, DateTime Created = default, DateTime Updated = default);
+    public class CreateMessagesHandler(AppDbContext context)
     {
-        protected readonly AppDbContext _context;
-        public CreateMessagesHandler(AppDbContext context) 
-        { 
-            _context = context;
-        } 
-
-        public async Task<CreateResponse> HandleAsync(CreateMessageRequest request)
+        public async Task<CreateMessageResponse> HandleAsync(CreateMessageRequest request)
         {
             var message = new Message
             {
@@ -26,10 +20,10 @@ namespace WebAPI.Features.Chat.ChatMessage.Command
                 RoomId = request.RoomId,
             };
 
-            _context.Messages.Add(message);
-            await _context.SaveChangesAsync();
+            context.Messages.Add(message);
+            await context.SaveChangesAsync();
 
-            return new CreateResponse(message.Id, message.Content, message.ApplicationUser?.UserName!);
+            return new CreateMessageResponse(message.Id, message.Content, message.ApplicationUser?.UserName!, message.Created, message.Updated);
         }
     }
 }

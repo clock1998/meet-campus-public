@@ -28,9 +28,9 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="chat"
+                name="discover"
                 options={{
-                    title: 'Chat',
+                    title: 'Discover',
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
                     ),
