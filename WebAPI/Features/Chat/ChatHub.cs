@@ -21,9 +21,6 @@ namespace WebAPI.Features.Chat
         private readonly CreateRoomHandler _createRoomHandler;
         private readonly DeleteRoomHandler _deleteRoomHandler;
 
-        public static int ActiveUsers { get; set; } = 0;
-        public static string Room { get; set; } = "";
-
         public ChatHub(AppDbContext context, CreateMessagesHandler createMessageHandler,
             DeleteMessagesHandler deleteMessagesHandler, CreateRoomHandler createRoomHandler,
             DeleteRoomHandler deleteRoomHandler)

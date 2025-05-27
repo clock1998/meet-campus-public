@@ -7,15 +7,9 @@ namespace WebAPI.Infrastructure
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
 
-        //public static bool operator ==(Entity? left, Entity? right)
-        //{
-        //    return left is not null && right is not null && left.Equals(right);
-        //}
+        public static bool operator == (Entity left, Entity right) => left.Id == right.Id;
 
-        //public static bool operator !=(Entity? left, Entity? right)
-        //{
-        //    return !(left==right);
-        //}
+        public static bool operator != (Entity left, Entity right) => left.Id != right.Id;
         public string? GetDisplayName()
         {
             Type type = GetType();
@@ -28,24 +22,10 @@ namespace WebAPI.Infrastructure
             return null;
         }
 
-        public override bool Equals(object? obj)
-        {
-            if (obj == null) { return false; }
-            if (obj.GetType() != GetType()) { return false; }
-            if (obj is not Entity entity) { return false; }
-            return entity.Id == Id;
-        }
+        public override bool Equals(object? obj) => Equals(obj as Entity);
 
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
-        public bool Equals(Entity? other)
-        {
-            if (other is null) { return false; }
-            if (other.GetType() != GetType()) { return false; };
-            return other.Id == Id;
-        }
+        public bool Equals(Entity? other) => other is not null && other.Id == Id;
     }
 }

@@ -22,8 +22,8 @@ namespace WebAPI.Features.Chat.ChatRoom.Command
             foreach (var userId in request.UserIds.Distinct())
             {
                 var user = await _context.Users.FindAsync(userId);
-                if (user != null) room.ApplicationUsers.Add(user);
-                throw new NoNullAllowedException("User is null");
+                if (user == null) throw new NoNullAllowedException("User is null");
+                room.ApplicationUsers.Add(user);
             }
             _context.Rooms.Add(room);
             await _context.SaveChangesAsync();

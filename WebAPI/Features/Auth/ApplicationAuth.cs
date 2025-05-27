@@ -36,7 +36,6 @@ namespace WebAPI.Features.Auth
         public override bool Equals(object? obj)
         {
             if (obj == null) { return false; }
-            if (obj.GetType() != GetType()) { return false; }
             if (obj is not ApplicationUser entity) { return false; }
             return entity.Id == Id;
         }

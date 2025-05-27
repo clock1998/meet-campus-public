@@ -5,17 +5,12 @@ using WebAPI.Infrastructure;
 
 namespace WebAPI.Features.Chat.ChatRoom.Query
 {
-    public class GetAllRoomsHandler
+    public class GetAllRoomsHandler(AppDbContext context)
     {
-        private readonly AppDbContext _context;
-        public GetAllRoomsHandler(AppDbContext context)
+        
+        public async Task<PagedList<Room>> HandleAsync(QueryStringParameters queryStringParameters)
         {
-            _context = context;
-        }
-
-        public async Task<PagedList<Room>> HandleAsync(GetAllByRoomIdHandlerMessageRequest request, QueryStringParameters queryStringParameters)
-        {
-            IQueryable<Room> query = _context.Rooms;
+            IQueryable<Room> query = context.Rooms;
 
             query = query.DefaultSort(null, queryStringParameters.SortOrder);
 
