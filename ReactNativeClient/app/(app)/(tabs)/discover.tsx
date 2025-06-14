@@ -1,67 +1,32 @@
 import { User, useSession } from '@/context/AuthContext';
-import { SignalRService } from '@/services/signalRService';
-import React, { useEffect, useState, useRef } from 'react';
+import { useSignalR } from '@/context/SignalRContext';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function ChatScreen() {
   const { userSession } = useSession();
-  const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const signalRServiceRef = useRef<SignalRService | null>(null);
+  const { signalRService, isConnected, onlineUsers } = useSignalR();
   const router = useRouter();
 
   useEffect(() => {
-    if (!userSession?.token) return;
+    if (!signalRService || !isConnected) return;
 
-    try {
-      setIsConnecting(true);
-      signalRServiceRef.current = new SignalRService(userSession.token);
-      
-      // Set up user connection handlers
-      signalRServiceRef.current.onUserConnected((message: string) => {
-        console.log('User connected:', message);
+    // Set up room creation handler
+    signalRService.createRoomHandler((roomId: string) => {
+      console.log('Room created:', roomId);
+      router.push({
+        pathname: '/(app)/chat/[id]',
+        params: { id: roomId }
       });
-
-      signalRServiceRef.current.getOnlineUsers((users: User[]) => {
-        setConnectedUsers(users);
-      });
-        
-      signalRServiceRef.current.onUserDisconnected((users: User[]) => {
-        setConnectedUsers(users);
-      });
-
-      // Set up room creation handler
-      signalRServiceRef.current.createRoomHandler((roomId: string) => {
-        console.log('Room created:', roomId);
-        router.push({
-          pathname: '/(app)/chat/[id]',
-          params: { id: roomId }
-        });
-      });
-
-      // Connect to SignalR
-      signalRServiceRef.current.connect();
-    } catch (error) {
-      console.error('Failed to initialize SignalR:', error);
-      Alert.alert('Connection Error', 'Failed to connect to chat server');
-    } finally {
-      setIsConnecting(false);
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (signalRServiceRef.current) {
-        signalRServiceRef.current.disconnect();
-      }
-    };
-  }, [userSession?.token, router]);
+    });
+  }, [signalRService, isConnected, onlineUsers, router]);
 
   const handleUserPress = async (selectedUser: User) => {
-    if (!signalRServiceRef.current || !userSession?.user) return;
+    if (!signalRService || !userSession?.user) return;
 
     try {
-      await signalRServiceRef.current.createRoom({
+      await signalRService.createRoom({
         userIds: [userSession.user.id, selectedUser.id]
       });
     } catch (error) {
@@ -70,7 +35,7 @@ export default function ChatScreen() {
     }
   };
 
-  if (isConnecting) {
+  if (!signalRService || !isConnected) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -87,10 +52,10 @@ export default function ChatScreen() {
 
       <FlatList
         style={styles.userList}
-        data={connectedUsers}
+        data={onlineUsers}
         keyExtractor={(item) => item.email}
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.userContainer}
             onPress={() => handleUserPress(item)}
           >
@@ -109,7 +74,7 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
+  container: {
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -129,8 +94,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  title: { 
-    fontSize: 24, 
+  title: {
+    fontSize: 24,
     fontWeight: 'bold',
   },
   userList: {

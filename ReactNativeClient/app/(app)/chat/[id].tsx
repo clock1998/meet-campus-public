@@ -1,9 +1,10 @@
 import { User, useSession } from '@/context/AuthContext';
-import { SignalRService, CreateMessageResponse, CreateMessageRequest } from '@/services/signalRService';
+import { CreateMessageResponse, CreateMessageRequest } from '@/services/signalRService';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
+import { useSignalR } from '@/context/SignalRContext';
 
 interface Message {
   id: string;
@@ -19,18 +20,14 @@ export default function ChatRoomScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
-  const signalRServiceRef = useRef<SignalRService | null>(null);
+  const { signalRService, isConnected, onlineUsers  } = useSignalR();
   const router = useRouter();
 
   useEffect(() => {
-    if (!userSession?.token || !roomId) return;
-
-    try {
-      setIsConnecting(true);
-      signalRServiceRef.current = new SignalRService(userSession.token);
+    if (!userSession?.token || !roomId || !signalRService) return;
 
       // Set up message handler
-      signalRServiceRef.current.sendMessageToRoomHandler((message: CreateMessageResponse) => {
+      signalRService.sendMessageToRoomHandler((message: CreateMessageResponse) => {
         setMessages(prev => [...prev, {
           id: message.id,
           username: message.username,
@@ -40,23 +37,13 @@ export default function ChatRoomScreen() {
         }]);
       });
 
-      // Connect to SignalR
-      signalRServiceRef.current.connect();
-    } catch (error) {
-      console.error('Failed to initialize SignalR:', error);
-    } finally {
-      setIsConnecting(false);
-    }
-
-    return () => {
-      if (signalRServiceRef.current) {
-        signalRServiceRef.current.disconnect();
-      }
-    };
-  }, [userSession?.token, roomId]);
+      signalRService.joinRoom(roomId as string).then(() => {
+        console.log('Joined room');
+      });
+  }, [userSession?.token, roomId,signalRService, isConnected, onlineUsers, router]);
 
   const handleSendMessage = async () => {
-    if (!signalRServiceRef.current || !userSession?.user || !newMessage.trim()) return;
+    if (!signalRService || !userSession?.user || !newMessage.trim()) return;
 
     try {
       const messageRequest: CreateMessageRequest = {
@@ -65,7 +52,7 @@ export default function ChatRoomScreen() {
         content: newMessage.trim()
       };
 
-      await signalRServiceRef.current.sendMessageToRoom(messageRequest);
+      await signalRService.sendMessageToRoom(messageRequest);
       setNewMessage('');
     } catch (error) {
       console.error('Failed to send message:', error);

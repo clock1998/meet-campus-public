@@ -20,6 +20,17 @@ export interface CreateRoomRequest {
   userIds: string[];
 }
 
+export interface ChatRoom {
+  id: string;
+  name: string;
+  lastMessage?: {
+    content: string;
+    timestamp: Date;
+    senderName: string;
+  };
+  participants: User[];
+}
+
 export class SignalRService {
   private connection: HubConnection;
   private token: string;
@@ -46,24 +57,47 @@ export class SignalRService {
     }
   }
 
-  public onUserConnected(callback: (message:string) => void): void {
-    this.connection.on('UserConnectedHandler', callback);
+  public connectedUserHandler(callback: (message:string) => void): void {
+    this.connection.on('ConnectedUserHandler', callback);
   }
-  public getOnlineUsers(callback: (user:User[]) => void): void {
-    this.connection.on('UsersConnectedHandler', callback);
+
+  public OnlineUsersHandler(callback: (user:User[]) => void): void {
+    this.connection.on('OnlineUsersHandler', callback);
   }
-  public onUserDisconnected(callback: (user:User[]) => void): void {
+
+  public userDisconnectedHandler(callback: (user:User[]) => void): void {
     this.connection.on('UserDisconnectedHandler', callback);
   }
 
-  public createRoomHandler(callback: (message: string) => void): void {
+  public createRoomHandler(callback: (roomId: string) => void): void {
     this.connection.on('CreateRoomHandler', callback);
   }
 
+  public getUserRoomsHandler(callback: (rooms: ChatRoom[]) => void): void {
+    this.connection.on('GetUserRoomsHandler', callback);
+  }
+
+  public async getUserRooms(): Promise<void> {
+    try {
+      await this.connection.invoke('GetUserRooms');
+    } catch (err) {
+      console.error('Error getting user rooms:', err);
+      throw err;
+    }
+  }
 
   public async createRoom(request: CreateRoomRequest): Promise<void> {
     try {
       await this.connection.invoke('CreateRoom', request);
+    } catch (err) {
+      console.error('Error creating room:', err);
+      throw err;
+    }
+  }
+
+  public async joinRoom(roomId: string): Promise<void> {
+    try {
+      await this.connection.invoke('JoinRoom', roomId);
     } catch (err) {
       console.error('Error creating room:', err);
       throw err;

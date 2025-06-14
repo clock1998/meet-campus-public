@@ -41,9 +41,10 @@ namespace WebAPI.Features.Chat
             {
                 var username = user.UserName;
                 ChatHubConnections.AddUserConnection(user, Context.ConnectionId);
-                Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
-                    .SendAsync("UserConnectedHandler", $"{username} is connected.");
-                Clients.Caller.SendAsync("UsersConnectedHandler", ChatHubConnections.GetOnlineUsers());
+                Clients.Users(
+         ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
+                .SendAsync("ConnectedUserHandler", $"{username} is connected.");
+                Clients.Caller.SendAsync("OnlineUsersHandler", ChatHubConnections.GetOnlineUsers());
             }
 
             return base.OnConnectedAsync();
@@ -69,23 +70,28 @@ namespace WebAPI.Features.Chat
         public async Task CreateRoom(CreateRoomRequest request)
         {
             var room = await _createRoomHandler.HandleAsync(request);
-            foreach (var userId in request.UserIds.Distinct())
-            {
-                var connectionIds = ChatHubConnections.GetOnlineUserSessions(userId);
-                foreach (var connectionId in connectionIds)
-                {
-                    await Groups.AddToGroupAsync(connectionId, room.Id.ToString());    
-                }
-            }
-            await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
-                $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
+
+            await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler", room.Id);
+            // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
+            //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }
 
-        public async Task JoinRoom(string roomId)
+        public async Task JoinRoom(Guid roomId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
-            await Clients.Group(roomId)
-                .SendAsync("AddToRoomHandler", $"{Context.ConnectionId} has joined the group {roomId}.");
+            var room = await _context.Rooms.FindAsync(roomId);
+            if (room is not null)
+            {
+                foreach (var user in room.ApplicationUsers.Distinct())
+                {
+                    var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id);
+                    foreach (var connectionId in connectionIds)
+                    {
+                        await Groups.AddToGroupAsync(connectionId, room.Id.ToString());
+                        await Clients.Group(room.Id.ToString())
+                            .SendAsync("JoinRoomHandler", $"{user.UserName} has joined the group {roomId}.");
+                    }
+                }
+            }
         }
 
         public async Task SendMessageToRoom(CreateMessageRequest request)
