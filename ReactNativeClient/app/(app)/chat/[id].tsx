@@ -36,7 +36,9 @@ export default function ChatRoomScreen() {
           updated: message.updated!
         }]);
       });
-
+      signalRService.joinRoomHandler((message: string) => {
+        console.log(message);
+      });
       signalRService.joinRoom(roomId as string).then(() => {
         console.log('Joined room');
       });

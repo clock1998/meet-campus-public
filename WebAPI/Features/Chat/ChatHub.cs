@@ -71,7 +71,7 @@ namespace WebAPI.Features.Chat
         {
             var room = await _createRoomHandler.HandleAsync(request);
 
-            await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler", room.Id);
+            await Clients.Caller.SendAsync("CreateRoomHandler", room.Id);
             // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
             //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }

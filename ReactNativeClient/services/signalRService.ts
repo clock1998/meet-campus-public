@@ -76,7 +76,10 @@ export class SignalRService {
   public getUserRoomsHandler(callback: (rooms: ChatRoom[]) => void): void {
     this.connection.on('GetUserRoomsHandler', callback);
   }
-
+  public joinRoomHandler(callback: (message: string) => void): void {
+    this.connection.on('JoinRoomHandler', callback);
+  }
+  
   public async getUserRooms(): Promise<void> {
     try {
       await this.connection.invoke('GetUserRooms');
@@ -110,7 +113,7 @@ export class SignalRService {
 
   public async sendMessageToRoom(request: CreateMessageRequest): Promise<void> {
     try {
-      await this.connection.invoke('SendMessageToRoomHandler', request);
+      await this.connection.invoke('SendMessageToRoom', request);
     } catch (err) {
       console.error('Error sending message:', err);
       throw err;
