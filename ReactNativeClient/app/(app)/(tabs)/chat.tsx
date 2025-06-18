@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
+import { useSignalR } from '@/context/SignalRContext';
 
 interface ChatRoom {
   id: string;
@@ -20,49 +21,22 @@ export default function ChatRoomsScreen() {
   const { userSession } = useSession();
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const signalRServiceRef = useRef<SignalRService | null>(null);
+  const { signalRService, isConnected, onlineUsers } = useSignalR();
   const router = useRouter();
 
   useEffect(() => {
-    if (!userSession?.token) return;
+    if (!signalRService || !isConnected) return;
 
-    try {
-      setIsLoading(true);
-      signalRServiceRef.current = new SignalRService(userSession.token);
+    signalRService.getUserRoomsHandler((rooms: ChatRoom[]) => {
+      setChatRooms(rooms);
+    });
 
-      // Set up room list handler
-      signalRServiceRef.current.getUserRoomsHandler((rooms: ChatRoom[]) => {
-        setChatRooms(rooms);
-      });
-
-      // Set up new room handler
-      signalRServiceRef.current.createRoomHandler((roomId: string) => {
-        // Refresh room list when a new room is created
-        signalRServiceRef.current?.getUserRooms();
-      });
-
-      // Connect to SignalR
-      signalRServiceRef.current.connect().then(() => {
-        // Get initial room list
-        signalRServiceRef.current?.getUserRooms();
-      });
-    } catch (error) {
-      console.error('Failed to initialize SignalR:', error);
-    } finally {
-      setIsLoading(false);
-    }
-
-    return () => {
-      if (signalRServiceRef.current) {
-        signalRServiceRef.current.disconnect();
-      }
-    };
-  }, [userSession?.token]);
+  }, [signalRService, isConnected, onlineUsers, router]);
 
   const handleRoomPress = (roomId: string) => {
     router.push({
       pathname: '/(app)/chat/[id]',
-      params: { id: roomId }
+      params: { id: roomId },
     });
   };
 

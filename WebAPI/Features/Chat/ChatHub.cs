@@ -40,11 +40,20 @@ namespace WebAPI.Features.Chat
             if (user != null)
             {
                 var username = user.UserName;
+                var roomIds = user.Rooms.Select(n => n.Id.ToString());
                 ChatHubConnections.AddUserConnection(user, Context.ConnectionId);
-                Clients.Users(
-         ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
+                Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
                 .SendAsync("ConnectedUserHandler", $"{username} is connected.");
                 Clients.Caller.SendAsync("OnlineUsersHandler", ChatHubConnections.GetOnlineUsers());
+                
+                var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id);
+                foreach (var connectionId in connectionIds)
+                {
+                    foreach (var roomId in roomIds)
+                    {
+                        Groups.AddToGroupAsync(connectionId, roomId);
+                    }
+                }
             }
 
             return base.OnConnectedAsync();
