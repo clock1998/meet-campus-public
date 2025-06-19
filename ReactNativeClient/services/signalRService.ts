@@ -19,7 +19,12 @@ export interface CreateMessageResponse{
 export interface CreateRoomRequest {
   userIds: string[];
 }
-
+export interface Message {
+  id:string;
+  content:string;
+  userId:string;
+  roomId:string;
+}
 export interface ChatRoom {
   id: string;
   name: string;
@@ -28,7 +33,8 @@ export interface ChatRoom {
     timestamp: Date;
     senderName: string;
   };
-  participants: User[];
+  messages: Message[];
+  users: User[];
 }
 
 export class SignalRService {
@@ -73,8 +79,8 @@ export class SignalRService {
     this.connection.on('CreateRoomHandler', callback);
   }
 
-  public getUserRoomsHandler(callback: (rooms: ChatRoom[]) => void): void {
-    this.connection.on('GetUserRoomsHandler', callback);
+  public getChatRoomsHandler(callback: (rooms: ChatRoom[]) => void): void {
+    this.connection.on('GetChatRoomsHandler', callback);
   }
   public joinRoomHandler(callback: (message: string) => void): void {
     this.connection.on('JoinRoomHandler', callback);

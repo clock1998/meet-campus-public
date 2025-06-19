@@ -1,35 +1,22 @@
  import { User, useSession } from '@/context/AuthContext';
-import { SignalRService } from '@/services/signalRService';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { useSignalR } from '@/context/SignalRContext';
+import { ChatRoom } from '@/services/signalRService';
 
-interface ChatRoom {
-  id: string;
-  name: string;
-  lastMessage?: {
-    content: string;
-    timestamp: Date;
-    senderName: string;
-  };
-  participants: User[];
-}
 
 export default function ChatRoomsScreen() {
   const { userSession } = useSession();
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { signalRService, isConnected, onlineUsers } = useSignalR();
+  const { signalRService, isConnected, onlineUsers, chatRooms } = useSignalR();
   const router = useRouter();
 
   useEffect(() => {
     if (!signalRService || !isConnected) return;
 
-    signalRService.getUserRoomsHandler((rooms: ChatRoom[]) => {
-      setChatRooms(rooms);
-    });
+
 
   }, [signalRService, isConnected, onlineUsers, router]);
 

@@ -368,6 +368,11 @@ namespace WebAPI.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTime>("Updated")
                         .HasColumnType("timestamp with time zone");
 

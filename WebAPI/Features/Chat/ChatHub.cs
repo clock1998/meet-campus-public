@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using WebAPI.Features.Auth;
+using WebAPI.Features.Chat.ChatMessage;
 using WebAPI.Features.Chat.ChatMessage.Command;
 using WebAPI.Features.Chat.ChatRoom;
 using WebAPI.Features.Chat.ChatRoom.Command;
@@ -31,7 +33,8 @@ namespace WebAPI.Features.Chat
             _createRoomHandler = createRoomHandler;
             _deleteRoomHandler = deleteRoomHandler;
         }
-
+        
+        public record ChatRoom(string Id, string Name, Message LastMessage, List<Message> Messages, List<ApplicationUser> Users);
         public override Task OnConnectedAsync()
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -46,6 +49,7 @@ namespace WebAPI.Features.Chat
                 .SendAsync("ConnectedUserHandler", $"{username} is connected.");
                 Clients.Caller.SendAsync("OnlineUsersHandler", ChatHubConnections.GetOnlineUsers());
                 
+                
                 var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id);
                 foreach (var connectionId in connectionIds)
                 {
@@ -54,6 +58,7 @@ namespace WebAPI.Features.Chat
                         Groups.AddToGroupAsync(connectionId, roomId);
                     }
                 }
+                Clients.Caller.SendAsync("GetChatRoomsHandler", user.Rooms.Select(n=> new ChatRoom(n.Id.ToString(), n.Name, n.Messages.LastOrDefault(), n.Messages.OrderByDescending(m => m.Created).ToList(), n.ApplicationUsers.ToList())));
             }
 
             return base.OnConnectedAsync();
