@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using WebAPI.Features.Auth;
 using WebAPI.Infrastructure.Context;
 
@@ -16,14 +17,23 @@ namespace WebAPI.Features.Chat.ChatRoom.Command
             _context = context;
         } 
 
-        public async Task<Room> HandleAsync(CreateRoomRequest request)
+        public async Task<Room> HandleAsync(CreateRoomRequest request, ApplicationUser currentUser)
         {
             var room = new Room();
-            foreach (var userId in request.UserIds.Distinct())
+            var users = await _context.Users.Where(n => request.UserIds.Distinct().Contains(n.Id)).ToListAsync();
+            foreach (var user in users)
             {
-                var user = await _context.Users.FindAsync(userId);
                 if (user == null) throw new NoNullAllowedException("User is null");
                 room.ApplicationUsers.Add(user);
+            }
+
+            if (users.All(n => n.Id == currentUser.Id))
+            {
+                room.Name = currentUser.UserName!;    
+            }
+            else
+            {
+                room.Name = String.Concat(users.Where(n=> n.Id != currentUser.Id).Select(n => n.UserName));    
             }
             _context.Rooms.Add(room);
             await _context.SaveChangesAsync();

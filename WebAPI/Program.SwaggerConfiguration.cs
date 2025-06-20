@@ -33,7 +33,7 @@ namespace WebAPI
                                     Type=ReferenceType.SecurityScheme,
                                     Id=JwtBearerDefaults.AuthenticationScheme
                                 },
-                                Scheme = "Oauth2",
+                                Scheme = JwtBearerDefaults.AuthenticationScheme,
                                 Name = JwtBearerDefaults.AuthenticationScheme,
                                 In = ParameterLocation.Header,
                             },

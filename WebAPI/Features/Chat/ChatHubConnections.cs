@@ -56,7 +56,10 @@ namespace WebAPI.Features.Chat
             return _users.Keys.ToList();
         }
 
-
+        public static ApplicationUser GetOnlineUser(string connectionId)
+        {
+            return _users.FirstOrDefault(n => n.Value.Any(p => p.Contains(connectionId))).Key;
+        }
         public static List<string> GetOnlineUserSessions(ApplicationUser user)
         {
             return _users[user];

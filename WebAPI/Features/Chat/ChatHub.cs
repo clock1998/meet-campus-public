@@ -34,7 +34,7 @@ namespace WebAPI.Features.Chat
             _deleteRoomHandler = deleteRoomHandler;
         }
         
-        public record ChatRoom(string Id, string Name, Message LastMessage, List<Message> Messages, List<ApplicationUser> Users);
+        private record ChatRoom(string Id, string Name, Message? LastMessage, List<Message> Messages, List<ApplicationUser> Users);
         public override Task OnConnectedAsync()
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -48,7 +48,6 @@ namespace WebAPI.Features.Chat
                 Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
                 .SendAsync("ConnectedUserHandler", $"{username} is connected.");
                 Clients.Caller.SendAsync("OnlineUsersHandler", ChatHubConnections.GetOnlineUsers());
-                
                 
                 var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id);
                 foreach (var connectionId in connectionIds)
@@ -83,9 +82,11 @@ namespace WebAPI.Features.Chat
         //when a room is selected, we call add to room
         public async Task CreateRoom(CreateRoomRequest request)
         {
-            var room = await _createRoomHandler.HandleAsync(request);
+            var user = ChatHubConnections.GetOnlineUser(Context.ConnectionId);
+            var room = await _createRoomHandler.HandleAsync(request,user);
 
             await Clients.Caller.SendAsync("CreateRoomHandler", room.Id);
+            await Clients.Caller.SendAsync("GetChatRoomsHandler", user.Rooms.Select(n=> new ChatRoom(n.Id.ToString(), n.Name, n.Messages.LastOrDefault(), n.Messages.OrderByDescending(m => m.Created).ToList(), n.ApplicationUsers.ToList())));
             // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
             //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }

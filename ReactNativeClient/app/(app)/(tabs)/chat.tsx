@@ -18,7 +18,7 @@ export default function ChatRoomsScreen() {
 
 
 
-  }, [signalRService, isConnected, onlineUsers, router]);
+  }, [signalRService, isConnected, onlineUsers, chatRooms, router]);
 
   const handleRoomPress = (roomId: string) => {
     router.push({

@@ -1,4 +1,3 @@
-
 import React, { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import { ChatRoom, SignalRService } from '@/services/signalRService';
 import { User, useSession } from './AuthContext';
@@ -27,37 +26,44 @@ export function SignalRProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!userSession?.token) return;
 
-    try {
-      signalRServiceRef.current = new SignalRService(userSession.token);
-      signalRServiceRef.current.connectedUserHandler((message: string) => {
-        console.log('User connected:', message);
-      });
-  
-      signalRServiceRef.current.OnlineUsersHandler((users: User[]) => {
-        setOnlineUsers(users);
-      });
-        
-      signalRServiceRef.current.userDisconnectedHandler((users: User[]) => {
-        setOnlineUsers(users);
-      });
-      
-      signalRServiceRef.current.getChatRoomsHandler((rooms: ChatRoom[]) => {
-        setChatRooms(rooms);
-      });
+    const initializeSignalR = async () => {
+      try {
+        const service = new SignalRService(userSession.token);
+        signalRServiceRef.current = service;
 
-      signalRServiceRef.current.connect().then(()=>{
+        service.connectedUserHandler((message: string) => {
+          console.log('User connected:', message);
+        });
+    
+        service.OnlineUsersHandler((users: User[]) => {
+          setOnlineUsers(users);
+        });
+          
+        service.userDisconnectedHandler((users: User[]) => {
+          setOnlineUsers(users);
+        });
+        
+        service.getChatRoomsHandler((rooms: ChatRoom[]) => {
+          console.log("Updating Chatrooms:", rooms);
+          setChatRooms([...rooms]);
+        });
+  
+        await service.connect();
         setIsConnected(true);
-      });
-      
-    } catch (error) {
-      console.error('Failed to initialize SignalR:', error);
-      setIsConnected(false);
-    }
+        
+      } catch (error) {
+        console.error('Failed to initialize SignalR:', error);
+        setIsConnected(false);
+      }
+    };
+
+    initializeSignalR();
 
     return () => {
       if (signalRServiceRef.current) {
         signalRServiceRef.current.disconnect();
         setIsConnected(false);
+        signalRServiceRef.current = null;
       }
     };
   }, [userSession?.token]);
