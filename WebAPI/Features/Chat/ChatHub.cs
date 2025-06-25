@@ -11,6 +11,7 @@ using WebAPI.Features.Chat.ChatRoom;
 using WebAPI.Features.Chat.ChatRoom.Command;
 using WebAPI.Features.Chat.ChatRoom.Query;
 using WebAPI.Infrastructure.Context;
+// ReSharper disable All
 
 namespace WebAPI.Features.Chat
 {
@@ -22,7 +23,16 @@ namespace WebAPI.Features.Chat
         private readonly DeleteMessagesHandler _deleteMessagesHandler;
         private readonly CreateRoomHandler _createRoomHandler;
         private readonly DeleteRoomHandler _deleteRoomHandler;
-
+        private ApplicationUser User
+        {
+            get
+            {
+                var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = _context.Users.FirstOrDefault(n => userId != null && n.Id == Guid.Parse(userId));
+                if(user == null) throw new Exception("User not found");
+                return user;
+            }
+        }
         public ChatHub(AppDbContext context, CreateMessagesHandler createMessageHandler,
             DeleteMessagesHandler deleteMessagesHandler, CreateRoomHandler createRoomHandler,
             DeleteRoomHandler deleteRoomHandler)
@@ -37,19 +47,14 @@ namespace WebAPI.Features.Chat
         private record ChatRoom(string Id, string Name, Message? LastMessage, List<Message> Messages, List<ApplicationUser> Users);
         public override Task OnConnectedAsync()
         {
-            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = _context.Users.FirstOrDefault(n => userId != null && n.Id == Guid.Parse(userId));
-
-            if (user != null)
-            {
-                var username = user.UserName;
-                var roomIds = user.Rooms.Select(n => n.Id.ToString());
-                ChatHubConnections.AddUserConnection(user, Context.ConnectionId);
+                var username = User.UserName;
+                var roomIds = User.Rooms.Select(n => n.Id.ToString());
+                ChatHubConnections.AddUserConnection(User, Context.ConnectionId);
                 Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
                 .SendAsync("ConnectedUserHandler", $"{username} is connected.");
                 Clients.Caller.SendAsync("OnlineUsersHandler", ChatHubConnections.GetOnlineUsers());
                 
-                var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id);
+                var connectionIds = ChatHubConnections.GetOnlineUserSessions(User.Id);
                 foreach (var connectionId in connectionIds)
                 {
                     foreach (var roomId in roomIds)
@@ -57,20 +62,17 @@ namespace WebAPI.Features.Chat
                         Groups.AddToGroupAsync(connectionId, roomId);
                     }
                 }
-                Clients.Caller.SendAsync("GetChatRoomsHandler", user.Rooms.Select(n=> new ChatRoom(n.Id.ToString(), n.Name, n.Messages.LastOrDefault(), n.Messages.OrderByDescending(m => m.Created).ToList(), n.ApplicationUsers.ToList())));
-            }
-
+                Clients.Caller.SendAsync("GetChatRoomsHandler", User.Rooms.Select(n=> new ChatRoom(n.Id.ToString(), n.Name, n.Messages.LastOrDefault(), n.Messages.OrderByDescending(m => m.Created).ToList(), n.ApplicationUsers.ToList())));
+                
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = _context.Users.FirstOrDefault(n => userId != null && n.Id == Guid.Parse(userId));
-            if (user != null && ChatHubConnections.HasUserConnection(user, Context.ConnectionId))
+            if (ChatHubConnections.HasUserConnection(User, Context.ConnectionId))
             {
                 //Remove Disconnected user session.
-                var userConnections = ChatHubConnections.GetOnlineUserSessions(user);
+                var userConnections = ChatHubConnections.GetOnlineUserSessions(User);
                 userConnections.Remove(Context.ConnectionId);
                 Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
                     .SendAsync("UserDisconnectedHandler", ChatHubConnections.GetOnlineUsers());
@@ -82,15 +84,13 @@ namespace WebAPI.Features.Chat
         //when a room is selected, we call add to room
         public async Task CreateRoom(CreateRoomRequest request)
         {
-            var user = ChatHubConnections.GetOnlineUser(Context.ConnectionId);
-            var room = await _createRoomHandler.HandleAsync(request,user);
+            var room = await _createRoomHandler.HandleAsync(request, User);
 
             await Clients.Caller.SendAsync("CreateRoomHandler", room.Id);
-            await Clients.Caller.SendAsync("GetChatRoomsHandler", user.Rooms.Select(n=> new ChatRoom(n.Id.ToString(), n.Name, n.Messages.LastOrDefault(), n.Messages.OrderByDescending(m => m.Created).ToList(), n.ApplicationUsers.ToList())));
+            await Clients.Caller.SendAsync("GetChatRoomsHandler", User.Rooms.Select(n=> new ChatRoom(n.Id.ToString(), n.Name, n.Messages.LastOrDefault(), n.Messages.OrderByDescending(m => m.Created).ToList(), n.ApplicationUsers.ToList())));
             // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
             //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }
-
         public async Task JoinRoom(Guid roomId)
         {
             var room = await _context.Rooms.FindAsync(roomId);
