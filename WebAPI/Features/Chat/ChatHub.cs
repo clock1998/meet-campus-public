@@ -100,9 +100,10 @@ namespace WebAPI.Features.Chat
             {
                 foreach (var user in room.ApplicationUsers.Distinct())
                 {
-                    var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id);
+                    var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id).Distinct();
                     foreach (var connectionId in connectionIds)
                     {
+                        await Groups.RemoveFromGroupAsync(connectionId, room.Id.ToString());
                         await Groups.AddToGroupAsync(connectionId, room.Id.ToString());
                         await Clients.Group(room.Id.ToString())
                             .SendAsync("JoinRoomHandler", $"{user.UserName} has joined the group {roomId}.");
