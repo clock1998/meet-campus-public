@@ -19,12 +19,15 @@ export interface CreateMessageResponse{
 export interface CreateRoomRequest {
   userIds: string[];
 }
+
 export interface Message {
-  id:string;
-  content:string;
-  userId:string;
-  roomId:string;
+  id: string;
+  content: string;
+  applicationUser: User;
+  created: Date;
+  updated: Date;
 }
+
 export interface ChatRoom {
   id: string;
   name: string;

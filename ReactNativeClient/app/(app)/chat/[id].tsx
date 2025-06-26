@@ -6,28 +6,30 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { useSignalR } from '@/context/SignalRContext';
 
-interface Message {
-  id: string;
-  content: string;
-  username: string;
-  created: Date;
-  updated: Date;
-}
-
 export default function ChatRoomScreen() {
   const { id: roomId } = useLocalSearchParams();
   const { userSession } = useSession();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<CreateMessageResponse[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
-  const { signalRService, isConnected, onlineUsers  } = useSignalR();
+  const { signalRService, isConnected, onlineUsers, chatRooms } = useSignalR();
   const router = useRouter();
 
   useEffect(() => {
     if (!userSession?.token || !roomId || !signalRService) return;
-
-      // Set up message handler
-      signalRService.sendMessageToRoomHandler((message: CreateMessageResponse) => {
+    let chatRoom = chatRooms.find(n => n.id === roomId);
+    if (chatRoom?.messages) {
+      setMessages(chatRoom.messages.map(n => ({
+        id: n.id,
+        username: n.applicationUser.email,
+        content: n.content,
+        created: n.created,
+        updated: n.updated
+      })));
+    }
+    
+    // Set up message handler
+    signalRService.sendMessageToRoomHandler((message: CreateMessageResponse) => {
         setMessages(prev => [...prev, {
           id: message.id,
           username: message.username,
@@ -84,8 +86,8 @@ export default function ChatRoomScreen() {
         estimatedItemSize={100}
         style={styles.messageList}
         data={messages}
-        keyExtractor={(item: Message) => item.id}
-        renderItem={({ item }: { item: Message }) => (
+        keyExtractor={(item: CreateMessageResponse) => item.id}
+        renderItem={({ item }: { item: CreateMessageResponse }) => (
           <View style={[
             styles.messageContainer,
             item.username === userSession?.user?.email ? styles.sentMessage : styles.receivedMessage
