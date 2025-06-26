@@ -62,7 +62,7 @@ namespace WebAPI.Features.Chat
                         Groups.AddToGroupAsync(connectionId, roomId);
                     }
                 }
-                Clients.Caller.SendAsync("GetChatRoomsHandler", User.Rooms.Select(n=> new ChatRoom(n.Id.ToString(), n.Name, n.Messages.LastOrDefault(), n.Messages.OrderByDescending(m => m.Created).ToList(), n.ApplicationUsers.ToList())));
+                SendChatRoomsToCallerAsync();
                 
             return base.OnConnectedAsync();
         }
@@ -87,10 +87,12 @@ namespace WebAPI.Features.Chat
             var room = await _createRoomHandler.HandleAsync(request, User);
 
             await Clients.Caller.SendAsync("CreateRoomHandler", room.Id);
-            await Clients.Caller.SendAsync("GetChatRoomsHandler", User.Rooms.Select(n=> new ChatRoom(n.Id.ToString(), n.Name, n.Messages.LastOrDefault(), n.Messages.OrderByDescending(m => m.Created).ToList(), n.ApplicationUsers.ToList())));
+            await SendChatRoomsToCallerAsync();
             // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
             //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }
+
+
         public async Task JoinRoom(Guid roomId)
         {
             var room = await _context.Rooms.FindAsync(roomId);
@@ -113,6 +115,14 @@ namespace WebAPI.Features.Chat
         {
             var message = await _createMessageHandler.HandleAsync(request);
             await Clients.Group(request.RoomId.ToString()).SendAsync("SendMessageToRoomHandler", message);
+            await Clients.Group(request.RoomId.ToString()).SendAsync("GetChatRoomsHandler", 
+                User.Rooms.Select(n=> 
+                    new ChatRoom(
+                        n.Id.ToString(), 
+                        n.Name, 
+                        n.Messages.LastOrDefault(), 
+                        n.Messages.OrderByDescending(m => m.Created).ToList(), 
+                        n.ApplicationUsers.ToList())));
         }
 
         public record DeleteRoomRequest(Guid RoomId, Guid UserId);
@@ -149,5 +159,18 @@ namespace WebAPI.Features.Chat
         
             await _context.SaveChangesAsync();
         }
+        
+        private Task SendChatRoomsToCallerAsync()
+        {
+            return Clients.Caller.SendAsync("GetChatRoomsHandler", 
+                User.Rooms.Select(n=> 
+                    new ChatRoom(
+                        n.Id.ToString(), 
+                        n.Name, 
+                        n.Messages.LastOrDefault(), 
+                        n.Messages.OrderByDescending(m => m.Created).ToList(), 
+                        n.ApplicationUsers.ToList())));
+        }
+
     }
 }

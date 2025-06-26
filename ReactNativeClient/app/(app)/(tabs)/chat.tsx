@@ -56,13 +56,13 @@ export default function ChatRoomsScreen() {
               <Text style={styles.roomName}>{item.name}</Text>
               {item.lastMessage && (
                 <Text style={styles.lastMessage} numberOfLines={1}>
-                  {item.lastMessage.senderName}: {item.lastMessage.content}
+                  {item.lastMessage.applicationUser.email}: {item.lastMessage.content}
                 </Text>
               )}
             </View>
             {item.lastMessage && (
               <Text style={styles.timestamp}>
-                {new Date(item.lastMessage.timestamp).toLocaleTimeString()}
+                {new Date(item.lastMessage.updated).toLocaleTimeString()}
               </Text>
             )}
           </TouchableOpacity>

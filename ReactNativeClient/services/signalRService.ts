@@ -30,8 +30,9 @@ export interface ChatRoom {
   name: string;
   lastMessage?: {
     content: string;
-    timestamp: Date;
-    senderName: string;
+    created: Date;
+    updated: Date;
+    applicationUser: User;
   };
   messages: Message[];
   users: User[];
