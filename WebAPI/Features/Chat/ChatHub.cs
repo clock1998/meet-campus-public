@@ -23,7 +23,7 @@ namespace WebAPI.Features.Chat
         private readonly DeleteMessagesHandler _deleteMessagesHandler;
         private readonly CreateRoomHandler _createRoomHandler;
         private readonly DeleteRoomHandler _deleteRoomHandler;
-        private ApplicationUser User
+        private ApplicationUser ApplicationUser
         {
             get
             {
@@ -47,14 +47,14 @@ namespace WebAPI.Features.Chat
         private record ChatRoom(string Id, string Name, Message? LastMessage, List<Message> Messages, List<ApplicationUser> Users);
         public override Task OnConnectedAsync()
         {
-                var username = User.UserName;
-                var roomIds = User.Rooms.Select(n => n.Id.ToString());
-                ChatHubConnections.AddUserConnection(User, Context.ConnectionId);
+                var username = ApplicationUser.UserName;
+                var roomIds = ApplicationUser.Rooms.Select(n => n.Id.ToString());
+                ChatHubConnections.AddUserConnection(new User(ApplicationUser), Context.ConnectionId);
                 Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
                 .SendAsync("ConnectedUserHandler", $"{username} is connected.");
                 Clients.Caller.SendAsync("OnlineUsersHandler", ChatHubConnections.GetOnlineUsers());
                 
-                var connectionIds = ChatHubConnections.GetOnlineUserSessions(User.Id);
+                var connectionIds = ChatHubConnections.GetOnlineUserSessions(ApplicationUser.Id);
                 foreach (var connectionId in connectionIds)
                 {
                     foreach (var roomId in roomIds)
@@ -69,10 +69,10 @@ namespace WebAPI.Features.Chat
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            if (ChatHubConnections.HasUserConnection(User, Context.ConnectionId))
+            if (ChatHubConnections.HasUserConnection(new User(ApplicationUser), Context.ConnectionId))
             {
                 //Remove Disconnected user session.
-                var userConnections = ChatHubConnections.GetOnlineUserSessions(User);
+                var userConnections = ChatHubConnections.GetOnlineUserSessions(new User(ApplicationUser));
                 userConnections.Remove(Context.ConnectionId);
                 Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
                     .SendAsync("UserDisconnectedHandler", ChatHubConnections.GetOnlineUsers());
@@ -84,7 +84,7 @@ namespace WebAPI.Features.Chat
         //when a room is selected, we call add to room
         public async Task CreateRoom(CreateRoomRequest request)
         {
-            var room = await _createRoomHandler.HandleAsync(request, User);
+            var room = await _createRoomHandler.HandleAsync(request, ApplicationUser);
 
             await Clients.Caller.SendAsync("CreateRoomHandler", room.Id);
             await SendChatRoomsToCallerAsync();
@@ -117,7 +117,7 @@ namespace WebAPI.Features.Chat
             var message = await _createMessageHandler.HandleAsync(request);
             await Clients.Group(request.RoomId.ToString()).SendAsync("SendMessageToRoomHandler", message);
             await Clients.Group(request.RoomId.ToString()).SendAsync("GetChatRoomsHandler", 
-                User.Rooms.Select(n=> 
+                ApplicationUser.Rooms.Select(n=> 
                     new ChatRoom(
                         n.Id.ToString(), 
                         n.Name, 
@@ -164,7 +164,7 @@ namespace WebAPI.Features.Chat
         private Task SendChatRoomsToCallerAsync()
         {
             return Clients.Caller.SendAsync("GetChatRoomsHandler", 
-                User.Rooms.Select(n=> 
+                ApplicationUser.Rooms.Select(n=> 
                     new ChatRoom(
                         n.Id.ToString(), 
                         n.Name, 

@@ -2,11 +2,32 @@
 
 namespace WebAPI.Features.Chat
 {
+    public class User
+    {
+        public Guid Id { set; get; }
+        public string Email { set; get; } = string.Empty;
+        public string Username { set; get; } = string.Empty;
+
+        public User(Guid id)
+        {
+            Id = id;
+        }
+        public User(ApplicationUser appUser)
+        {
+            Id = appUser.Id;
+            Email = appUser.Email!;
+            Username = appUser.UserName!;
+        }
+        public override bool Equals(object? obj) => Equals(obj as User);
+        public override int GetHashCode() => Id.GetHashCode();
+
+        public bool Equals(User? other) => other is not null && other.Id == Id;
+    }
     public class ChatHubConnections
     {
-        private static Dictionary<ApplicationUser, List<string>> _users = new();
+        private static Dictionary<User, List<string>> _users = new();
         
-        public static bool HasUserConnection(ApplicationUser user, string connectionId)
+        public static bool HasUserConnection(User user, string connectionId)
         {
             try
             {
@@ -23,7 +44,7 @@ namespace WebAPI.Features.Chat
             return false;
         }
 
-        public static bool HasUser(ApplicationUser user)
+        public static bool HasUser(User user)
         {
             try
             {
@@ -40,7 +61,7 @@ namespace WebAPI.Features.Chat
             return false;
         }
 
-        public static void AddUserConnection(ApplicationUser user, string connectionId)
+        public static void AddUserConnection(User user, string connectionId)
         {
             if (!HasUserConnection(user, connectionId))
             {
@@ -51,23 +72,23 @@ namespace WebAPI.Features.Chat
             }
         }
 
-        public static List<ApplicationUser> GetOnlineUsers()
+        public static List<User> GetOnlineUsers()
         {
             return _users.Keys.ToList();
         }
 
-        public static ApplicationUser GetOnlineUser(string connectionId)
+        public static User GetOnlineUser(string connectionId)
         {
             return _users.FirstOrDefault(n => n.Value.Any(p => p.Contains(connectionId))).Key;
         }
-        public static List<string> GetOnlineUserSessions(ApplicationUser user)
+        public static List<string> GetOnlineUserSessions(User user)
         {
             return _users[user];
         }
         
         public static List<string> GetOnlineUserSessions(Guid userId)
         {
-            return _users[new ApplicationUser(){Id = userId}];
+            return _users[new User(userId)];
         }
     }
 }
