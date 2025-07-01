@@ -1,11 +1,11 @@
 import React, { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
-import { CahtUser, ChatRoom, SignalRService } from '@/services/signalRService';
+import { ChatUser, ChatRoom, SignalRService } from '@/services/signalRService';
 import { useSession } from './AuthContext';
 
 interface SignalRContextType {
   signalRService: SignalRService | null;
   isConnected: boolean;
-  onlineUsers: CahtUser[];
+  onlineUsers: ChatUser[];
   chatRooms: ChatRoom[];
 }
 
@@ -19,7 +19,7 @@ const SignalRContext = createContext<SignalRContextType>({
 export function SignalRProvider({ children }: PropsWithChildren) {
   const { userSession } = useSession();
   const [isConnected, setIsConnected] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState<CahtUser[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<ChatUser[]>([]);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const signalRServiceRef = useRef<SignalRService | null>(null);
 
@@ -35,18 +35,18 @@ export function SignalRProvider({ children }: PropsWithChildren) {
           console.log('User connected:', message);
         });
     
-        service.OnlineUsersHandler((users: CahtUser[]) => {
+        service.OnlineUsersHandler((users: ChatUser[]) => {
           console.log(users)
           setOnlineUsers(users);
         });
           
-        service.userDisconnectedHandler((users: CahtUser[]) => {
+        service.userDisconnectedHandler((users: ChatUser[]) => {
           setOnlineUsers(users);
         });
         
         service.getChatRoomsHandler((rooms: ChatRoom[]) => {
           console.log("Updating Chatrooms:", rooms);
-          setChatRooms(rooms);
+          setChatRooms([...rooms]);
         });
   
         await service.connect();

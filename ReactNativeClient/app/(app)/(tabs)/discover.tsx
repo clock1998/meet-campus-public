@@ -3,7 +3,7 @@ import { useSignalR } from '@/context/SignalRContext';
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { CahtUser } from '@/services/signalRService';
+import { ChatUser } from '@/services/signalRService';
 
 export default function ChatScreen() {
   const { userSession } = useSession();
@@ -23,7 +23,7 @@ export default function ChatScreen() {
     });
   }, [signalRService, isConnected, onlineUsers, router]);
 
-  const handleUserPress = async (selectedUser: CahtUser) => {
+  const handleUserPress = async (selectedUser: ChatUser) => {
     if (!signalRService || !userSession?.user) return;
 
     try {

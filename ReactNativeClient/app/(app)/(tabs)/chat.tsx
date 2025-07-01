@@ -1,4 +1,4 @@
- import { User, useSession } from '@/context/AuthContext';
+ import { useSession } from '@/context/AuthContext';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -56,7 +56,7 @@ export default function ChatRoomsScreen() {
               <Text style={styles.roomName}>{item.name}</Text>
               {item.lastMessage && (
                 <Text style={styles.lastMessage} numberOfLines={1}>
-                  {item.lastMessage.applicationUser.email}: {item.lastMessage.content}
+                  {item.lastMessage.username}: {item.lastMessage.content}
                 </Text>
               )}
             </View>

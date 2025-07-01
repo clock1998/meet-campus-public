@@ -13,12 +13,8 @@ namespace WebAPI.Features.Chat.ChatMessage.Command
     {
         public async Task<CreateMessageResponse> HandleAsync(CreateMessageRequest request)
         {
-            var message = new Message
-            {
-                Content = request.Content,
-                ApplicationUserId= request.UserId,
-                RoomId = request.RoomId,
-            };
+            var message = new Message(content: request.Content, applicationUserId: request.UserId,
+                roomId: request.RoomId);
 
             context.Messages.Add(message);
             await context.SaveChangesAsync();

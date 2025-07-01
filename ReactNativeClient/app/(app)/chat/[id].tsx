@@ -1,4 +1,4 @@
-import { User, useSession } from '@/context/AuthContext';
+import { useSession } from '@/context/AuthContext';
 import { CreateMessageResponse, CreateMessageRequest } from '@/services/signalRService';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';

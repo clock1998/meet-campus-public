@@ -18,7 +18,7 @@ export interface CreateMessageResponse{
 export interface CreateRoomRequest {
   userIds: string[];
 }
-export interface CahtUser{
+export interface ChatUser{
   id:string;
   email:string;
   username:string;  
@@ -26,7 +26,7 @@ export interface CahtUser{
 export interface Message {
   id: string;
   content: string;
-  applicationUser: CahtUser;
+  applicationUser: ChatUser;
   created: Date;
   updated: Date;
 }
@@ -38,10 +38,10 @@ export interface ChatRoom {
     content: string;
     created: Date;
     updated: Date;
-    applicationUser: CahtUser;
+    username: string;
   };
   messages: Message[];
-  users: CahtUser[];
+  users: ChatUser[];
 }
 
 export class SignalRService {
@@ -74,11 +74,11 @@ export class SignalRService {
     this.connection.on('ConnectedUserHandler', callback);
   }
 
-  public OnlineUsersHandler(callback: (user:CahtUser[]) => void): void {
+  public OnlineUsersHandler(callback: (user:ChatUser[]) => void): void {
     this.connection.on('OnlineUsersHandler', callback);
   }
 
-  public userDisconnectedHandler(callback: (user:CahtUser[]) => void): void {
+  public userDisconnectedHandler(callback: (user:ChatUser[]) => void): void {
     this.connection.on('UserDisconnectedHandler', callback);
   }
 
