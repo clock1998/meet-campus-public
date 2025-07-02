@@ -84,6 +84,7 @@ export default function ChatRoomScreen() {
         estimatedItemSize={100}
         style={styles.messageList}
         data={messages}
+        inverted={true}
         keyExtractor={(item: CreateMessageResponse) => item.id}
         renderItem={({ item }: { item: CreateMessageResponse }) => (
           <View style={[
@@ -102,6 +103,7 @@ export default function ChatRoomScreen() {
             <Text style={styles.emptyText}>No messages yet</Text>
           </View>
         }
+        showsVerticalScrollIndicator={true}
       />
 
       <View style={styles.inputContainer}>
