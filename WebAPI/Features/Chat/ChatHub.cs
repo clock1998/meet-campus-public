@@ -162,7 +162,7 @@ namespace WebAPI.Features.Chat
                     new ChatRoom(
                         n.Id.ToString(), 
                         n.Name, 
-                        new ChatMessage(n.Messages.LastOrDefault().Id.ToString(), n.Messages.LastOrDefault().Content, n.Messages.LastOrDefault().ApplicationUser.UserName) , 
+                        n.Messages.Any() ? new ChatMessage(n.Messages.LastOrDefault().Id.ToString(), n.Messages.LastOrDefault().Content, n.Messages.LastOrDefault().ApplicationUser.UserName) : null , 
                         n.Messages.OrderByDescending(m => m.Created).ToList(), 
                         n.ApplicationUsers.ToList())));
         }
