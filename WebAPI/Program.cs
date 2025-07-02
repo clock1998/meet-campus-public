@@ -90,6 +90,17 @@ builder.Services.AddHostedService<MatchmakingService>();
 
 builder.Services.AddAuthConfiguration(config, rsaKey);
 
+builder.Services.AddCors(options =>
+{
+   options.AddPolicy("LocalhostPolicy", policy =>
+   {
+       policy.WithOrigins("http://localhost:8081")
+             .AllowAnyHeader()
+             .AllowAnyMethod()
+             .AllowCredentials();
+   });
+});
+
 try
 {
     var app = builder.Build();
@@ -122,6 +133,8 @@ try
         });
 
     app.UseExceptionHandler();
+
+    app.UseCors("LocalhostPolicy");
 
     app.MapControllers();
     app.UseRouting();
