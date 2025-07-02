@@ -41,9 +41,7 @@ export default function ChatRoomScreen() {
       signalRService.joinRoomHandler((message: string) => {
         console.log(message);
       });
-      signalRService.joinRoom(roomId as string).then(() => {
-        console.log('Joined room');
-      });
+      signalRService.joinRoom(roomId as string);
   }, [userSession?.token, roomId,signalRService, isConnected, onlineUsers, router]);
 
   const handleSendMessage = async () => {

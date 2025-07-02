@@ -88,19 +88,17 @@ namespace WebAPI.Features.Chat
 
         public async Task JoinRoom(Guid roomId)
         {
+            var currentConnectionId = Context.ConnectionId;
+            var user = await GetCurrentUserAsync();
             var room = await _context.Rooms.FindAsync(roomId);
             if (room is not null)
             {
-                foreach (var user in room.ApplicationUsers.Distinct())
+                var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id).Distinct();
+                if (!connectionIds.Contains(currentConnectionId))
                 {
-                    var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id).Distinct();
-                    foreach (var connectionId in connectionIds)
-                    {
-                        await Groups.RemoveFromGroupAsync(connectionId, room.Id.ToString());
-                        await Groups.AddToGroupAsync(connectionId, room.Id.ToString());
-                        await Clients.Group(room.Id.ToString())
-                            .SendAsync("JoinRoomHandler", $"{user.UserName} has joined the group {roomId}.");
-                    }
+                    await Groups.AddToGroupAsync(currentConnectionId, room.Id.ToString());
+                    await Clients.Group(room.Id.ToString())
+                        .SendAsync("JoinRoomHandler", $"{user.UserName} has joined the group {roomId}.");
                 }
             }
         }
