@@ -30,13 +30,13 @@ export default function ChatRoomScreen() {
     
     // Set up message handler
     signalRService.sendMessageToRoomHandler((message: CreateMessageResponse) => {
-        setMessages(prev => [...prev, {
+        setMessages(prev => [{
           id: message.id,
           username: message.username,
           content: message.content,
           created: message.created!,
           updated: message.updated!
-        }]);
+        }, ...prev]);
       });
       signalRService.joinRoomHandler((message: string) => {
         console.log(message);
