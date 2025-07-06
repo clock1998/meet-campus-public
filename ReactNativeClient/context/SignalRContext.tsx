@@ -45,7 +45,7 @@ export function SignalRProvider({ children }: PropsWithChildren) {
         });
         
         service.getChatRoomsHandler((rooms: ChatRoom[]) => {
-          console.log("Updating Chatrooms:", rooms);
+          // console.log("Updating Chatrooms:", rooms);
           setChatRooms([...rooms]);
         });
   

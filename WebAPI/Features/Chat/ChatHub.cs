@@ -117,40 +117,32 @@ namespace WebAPI.Features.Chat
                         n.Messages.OrderByDescending(m => m.Created).ToList(), 
                         n.ApplicationUsers.ToList())));
         }
-
-        public record DeleteRoomRequest(Guid RoomId, Guid UserId);
-
-        public async Task DeleteRoom(DeleteRoomRequest request)
+        
+        public async Task DeleteRoom(Guid roomId)
         {
-            var room = await _context.Rooms.FindAsync(request.RoomId);
-            if (room == null)
+            var room = await _context.Rooms.FindAsync(roomId);
+            if (room is null)
             {
                 await Clients.Caller.SendAsync("DeleteRoomHandler", "Room not found.");
                 return;
             }
-        
-            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId != request.UserId.ToString())
+            var currentUser =  await GetCurrentUserAsync();
+            if (!currentUser.Rooms.Select(n => n.Id).Contains(roomId))
             {
-                await Clients.Caller.SendAsync("DeleteRoomHandler", "Unauthorized to delete this room.");
+                await Clients.Caller.SendAsync("DeleteRoomHandler", "You are not a member of this room.");
                 return;
             }
-        
-            if (room.ApplicationUsers.Any())
-            {
-                room.ApplicationUsers.Remove(new Auth.ApplicationUser { Id = request.UserId });
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, request.RoomId.ToString());
-                await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler",
-                    $"{Context.ConnectionId} has left the group {request.RoomId}.");
-            }
-            else
-            {
-                _context.Rooms.Remove(room);
-                await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler",
-                    $"Room {request.RoomId} has been deleted.");
-            }
-        
+            _context.Rooms.Remove(room);
             await _context.SaveChangesAsync();
+            var sessions = ChatHubConnections.GetOnlineUserSessions(currentUser.Id);
+            foreach (var session in sessions)
+            {
+                await Groups.RemoveFromGroupAsync(session, room.Id.ToString());    
+            }
+
+            await SendChatRoomsToCallerAsync();
+            // await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler",
+            //     $"Room {request.RoomId} has been deleted.");
         }
         
         private async Task SendChatRoomsToCallerAsync()

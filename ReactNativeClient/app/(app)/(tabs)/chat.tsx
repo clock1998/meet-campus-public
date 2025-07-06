@@ -83,7 +83,7 @@ export default function ChatRoomsScreen() {
   const handleDeleteRoom = async (roomId: string) => {
     try {
       // TODO: Implement delete room functionality
-      // await signalRService?.deleteRoom(roomId);
+      await signalRService?.deleteRoom(roomId);
       console.log('Deleting room:', roomId);
     } catch (error) {
       console.error('Failed to delete room:', error);

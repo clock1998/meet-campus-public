@@ -89,6 +89,7 @@ export class SignalRService {
   public getChatRoomsHandler(callback: (rooms: ChatRoom[]) => void): void {
     this.connection.on('GetChatRoomsHandler', callback);
   }
+
   public joinRoomHandler(callback: (message: string) => void): void {
     this.connection.on('JoinRoomHandler', callback);
   }
@@ -120,6 +121,15 @@ export class SignalRService {
     }
   }
 
+  public async deleteRoom(roomId: string): Promise<void>{
+    try {
+      await this.connection.invoke('DeleteRoom', roomId);
+    } catch (err) {
+      console.error('Error deleting room:', err);
+      throw err;
+    }
+  }
+  
   public sendMessageToRoomHandler (callback: (request: CreateMessageResponse) => void ): void {
     this.connection.on('SendMessageToRoomHandler', callback);
   }
