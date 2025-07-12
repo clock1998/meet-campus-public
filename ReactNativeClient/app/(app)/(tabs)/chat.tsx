@@ -112,7 +112,7 @@ export default function ChatRoomsScreen() {
 
       <FlashList
         estimatedItemSize={80}
-        style={styles.roomList}
+        contentContainerStyle={styles.roomList}
         data={chatRooms}
         keyExtractor={(item: ChatRoom) => item.id}
         renderItem={({ item }: { item: ChatRoom }) => (
@@ -217,7 +217,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   roomList: {
-    flex: 1,
     padding: 10,
   },
   roomContainer: {
