@@ -35,7 +35,7 @@ namespace WebAPI.Features.Chat
         }
         
         private record ChatMessage(string Id, string Content, string Username, DateTime Updated = default);
-        private record ChatRoom(string Id, string Name, ChatMessage? LastMessage, List<Message> Messages, List<ApplicationUser> Users);
+        private record ChatRoom(string Id, string Name, ChatMessage? LastMessage, List<Message>? Messages, List<ApplicationUser>? Users);
         public override async Task OnConnectedAsync()
         {
             var currentUser =  await GetCurrentUserAsync();
@@ -91,9 +91,15 @@ namespace WebAPI.Features.Chat
         {
             var currentUser =  await GetCurrentUserAsync();
             var room = await _createRoomHandler.HandleAsync(request, currentUser);
-
-            await Clients.Caller.SendAsync("CreateRoomHandler", room.Id);
-            await SendChatRoomsToCallerAsync();
+            var userIds = request.UserIds.Select(n => n.ToString()).ToList();
+            await Clients.Users(userIds)
+                .SendAsync("CreateRoomHandler", 
+                    new ChatRoom(
+                        room.Id.ToString(), 
+                        room.Name, 
+                        null, 
+                        room.Messages.Any() ? room.Messages.OrderByDescending(m => m.Created).ToList(): null, 
+                        room.ApplicationUsers.ToList()));
             // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
             //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }
@@ -161,14 +167,23 @@ namespace WebAPI.Features.Chat
         private async Task SendChatRoomsToCallerAsync()
         {
             var currentUser =  await GetCurrentUserAsync();
-            
+            var test = currentUser.Rooms.Select(n =>
+                new ChatRoom(
+                    n.Id.ToString(),
+                    n.Name,
+                    n.Messages.Any()
+                        ? new ChatMessage(n.Messages.LastOrDefault().Id.ToString(), n.Messages.LastOrDefault().Content,
+                            n.Messages.LastOrDefault().ApplicationUser.UserName)
+                        : null,
+                    n.Messages.Any() ? n.Messages.OrderByDescending(m => m.Created).ToList() : null,
+                    n.ApplicationUsers.ToList()));
             await Clients.Caller.SendAsync("GetChatRoomsHandler", 
                 currentUser.Rooms.Select(n=> 
                     new ChatRoom(
                         n.Id.ToString(), 
                         n.Name, 
                         n.Messages.Any() ? new ChatMessage(n.Messages.LastOrDefault().Id.ToString(), n.Messages.LastOrDefault().Content, n.Messages.LastOrDefault().ApplicationUser.UserName) : null , 
-                        n.Messages.OrderByDescending(m => m.Created).ToList(), 
+                        n.Messages.Any() ? n.Messages.OrderByDescending(m => m.Created).ToList():null, 
                         n.ApplicationUsers.ToList())));
         }
 

@@ -86,7 +86,7 @@ export class SignalRService {
     this.connection.on('UserDisconnectedHandler', callback);
   }
 
-  public createRoomHandler(callback: (roomId: string) => void): void {
+  public createRoomHandler(callback: (rooms: ChatRoom) => void): void {
     this.connection.on('CreateRoomHandler', callback);
   }
 
