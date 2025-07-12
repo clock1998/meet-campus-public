@@ -35,13 +35,13 @@ export function SignalRProvider({ children }: PropsWithChildren) {
           console.log('User connected:', message);
         });
     
-        service.OnlineUsersHandler((users: ChatUser[]) => {
-          console.log(users)
-          setOnlineUsers(users);
+        service.onlineUsersHandler((users: ChatUser[]) => {
+          // console.log(users)
+          setOnlineUsers([...users]);
         });
           
         service.userDisconnectedHandler((users: ChatUser[]) => {
-          setOnlineUsers(users);
+          setOnlineUsers([...users]);
         });
         
         service.getChatRoomsHandler((rooms: ChatRoom[]) => {

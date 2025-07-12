@@ -25,13 +25,13 @@ namespace WebAPI.Features.Chat
     }
     public class ChatHubConnections
     {
-        private static Dictionary<User, List<string>> _users = new();
+        private static Dictionary<string, List<string>> _users = new();
         
-        public static bool HasUserConnection(User user, string connectionId)
+        public static bool HasUserConnection(string userId, string connectionId)
         {
             try
             {
-                if (_users.TryGetValue(user, out var appUser))
+                if (_users.TryGetValue(userId, out var appUser))
                 {
                     return appUser.Any(p => p.Contains(connectionId));
                 }
@@ -44,51 +44,37 @@ namespace WebAPI.Features.Chat
             return false;
         }
 
-        public static bool HasUser(User user)
+        public static void AddUserConnection(string userId, string connectionId)
         {
-            try
+            if (!HasUserConnection(userId, connectionId))
             {
-                if (_users.TryGetValue(user, out var appUser))
-                {
-                    return appUser.Any();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
-            return false;
-        }
-
-        public static void AddUserConnection(User user, string connectionId)
-        {
-            if (!HasUserConnection(user, connectionId))
-            {
-                if (_users.ContainsKey(user))
-                    _users[user].Add(connectionId);
+                if (_users.ContainsKey(userId))
+                    _users[userId].Add(connectionId);
                 else
-                    _users.Add(user, [connectionId]);
+                    _users.Add(userId, [connectionId]);
             }
         }
-
-        public static List<User> GetOnlineUsers()
+        
+        public static void RemoveUserConnection(string userId, string connectionId)
+        {
+            if (HasUserConnection(userId, connectionId))
+            {
+                _users[userId].Remove(connectionId);
+            }
+        }
+        
+        public static void RemoveUser(string userId)
+        {
+            _users.Remove(userId);
+        }
+        public static List<string> GetOnlineUsers()
         {
             return _users.Keys.ToList();
         }
 
-        public static User GetOnlineUser(string connectionId)
+        public static List<string> GetOnlineUserSessions(string userId)
         {
-            return _users.FirstOrDefault(n => n.Value.Any(p => p.Contains(connectionId))).Key;
-        }
-        public static List<string> GetOnlineUserSessions(User user)
-        {
-            return _users[user];
-        }
-        
-        public static List<string> GetOnlineUserSessions(Guid userId)
-        {
-            return _users[new User(userId)];
+            return _users[userId];
         }
     }
 }

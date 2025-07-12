@@ -41,12 +41,16 @@ namespace WebAPI.Features.Chat
             var currentUser =  await GetCurrentUserAsync();
             var username = currentUser.UserName;
             var roomIds = currentUser.Rooms.Select(n => n.Id.ToString());
-            ChatHubConnections.AddUserConnection(new User(currentUser), Context.ConnectionId);
-            await Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
-            .SendAsync("ConnectedUserHandler", $"{username} is connected.");
-            await Clients.Caller.SendAsync("OnlineUsersHandler", ChatHubConnections.GetOnlineUsers());
-            
-            var connectionIds = ChatHubConnections.GetOnlineUserSessions(currentUser.Id);
+            ChatHubConnections.AddUserConnection(currentUser.Id.ToString(), Context.ConnectionId);
+            // await Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
+            // .SendAsync("ConnectedUserHandler", $"{username} is connected.");
+            // await Clients.Caller.SendAsync("OnlineUsersHandler", ChatHubConnections.GetOnlineUsers());
+            var onlineUsers = 
+                _context.Users
+                    .Where(n=>ChatHubConnections.GetOnlineUsers().Contains(n.Id.ToString()))
+                    .Select(n=>new User(n)).ToList();
+            await Clients.All.SendAsync("OnlineUsersHandler", onlineUsers);
+            var connectionIds = ChatHubConnections.GetOnlineUserSessions(currentUser.Id.ToString());
             foreach (var connectionId in connectionIds)
             {
                 foreach (var roomId in roomIds)
@@ -61,16 +65,25 @@ namespace WebAPI.Features.Chat
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var currentUser =  await GetCurrentUserAsync();
-            if (ChatHubConnections.HasUserConnection(new User(currentUser), Context.ConnectionId))
+            if (ChatHubConnections.HasUserConnection(currentUser.Id.ToString(), Context.ConnectionId))
             {
                 //Remove Disconnected user session.
-                var userConnections = ChatHubConnections.GetOnlineUserSessions(new User(currentUser));
+                var userConnections = ChatHubConnections.GetOnlineUserSessions(currentUser.Id.ToString());;
                 userConnections.Remove(Context.ConnectionId);
-                await Clients.Users(ChatHubConnections.GetOnlineUsers().Select(n => n.Id.ToString()).ToList())
-                    .SendAsync("UserDisconnectedHandler", ChatHubConnections.GetOnlineUsers());
-            }
+                if (!userConnections.Any())
+                {
+                    ChatHubConnections.RemoveUser(currentUser.Id.ToString());
+                }
 
-           await base.OnDisconnectedAsync(exception);
+                var onlineUsers =
+                    _context.Users
+                        .Where(n => ChatHubConnections.GetOnlineUsers().Contains(n.Id.ToString()))
+                        .Select(n => new User(n)).ToList();
+                await Clients.All
+                    .SendAsync("UserDisconnectedHandler", onlineUsers);
+            }
+            await SendChatRoomsToCallerAsync();
+            await base.OnDisconnectedAsync(exception);
         }
 
         //when a room is selected, we call add to room
@@ -93,7 +106,7 @@ namespace WebAPI.Features.Chat
             var room = await _context.Rooms.FindAsync(roomId);
             if (room is not null)
             {
-                var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id).Distinct();
+                var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id.ToString()).Distinct();
                 if (!connectionIds.Contains(currentConnectionId))
                 {
                     await Groups.AddToGroupAsync(currentConnectionId, room.Id.ToString());
@@ -134,7 +147,7 @@ namespace WebAPI.Features.Chat
             }
             _context.Rooms.Remove(room);
             await _context.SaveChangesAsync();
-            var sessions = ChatHubConnections.GetOnlineUserSessions(currentUser.Id);
+            var sessions = ChatHubConnections.GetOnlineUserSessions(currentUser.Id.ToString());
             foreach (var session in sessions)
             {
                 await Groups.RemoveFromGroupAsync(session, room.Id.ToString());    

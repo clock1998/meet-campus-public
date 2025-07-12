@@ -69,12 +69,16 @@ export class SignalRService {
       throw err;
     }
   }
+  
+  public async disconnect(): Promise<void> {
+    await this.connection.stop();
+  }
 
   public connectedUserHandler(callback: (message:string) => void): void {
     this.connection.on('ConnectedUserHandler', callback);
   }
 
-  public OnlineUsersHandler(callback: (user:ChatUser[]) => void): void {
+  public onlineUsersHandler(callback: (user:ChatUser[]) => void): void {
     this.connection.on('OnlineUsersHandler', callback);
   }
 
@@ -129,7 +133,7 @@ export class SignalRService {
       throw err;
     }
   }
-  
+
   public sendMessageToRoomHandler (callback: (request: CreateMessageResponse) => void ): void {
     this.connection.on('SendMessageToRoomHandler', callback);
   }
@@ -143,7 +147,5 @@ export class SignalRService {
     }
   }
 
-  public async disconnect(): Promise<void> {
-    await this.connection.stop();
-  }
+
 }
