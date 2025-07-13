@@ -85,7 +85,7 @@ export default function ChatRoomScreen() {
     >
       <FlashList
         estimatedItemSize={100}
-        style={styles.messageList}
+        contentContainerStyle={styles.messageList}
         data={messages}
         inverted={true}
         keyExtractor={(item: CreateMessageResponse) => item.id}
@@ -158,7 +158,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   messageList: {
-    flex: 1,
     padding: 10,
   },
   messageContainer: {
