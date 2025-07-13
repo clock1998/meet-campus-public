@@ -6,14 +6,14 @@ export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
-                tabBarActiveTintColor: '#ffd33d',
+                tabBarActiveTintColor: '',
                 headerStyle: {
-                    backgroundColor: '#25292e',
+                    backgroundColor: '',
                 },
                 headerShadowVisible: false,
-                headerTintColor: '#fff',
+                headerTintColor: '',
                 tabBarStyle: {
-                    backgroundColor: '#25292e',
+                    backgroundColor: '',
                 },
             }}
         >
@@ -29,7 +29,7 @@ export default function TabLayout() {
             <Tabs.Screen
                 name="chat"
                 options={{
-                    title: 'Chats',
+                    title: 'Chat',
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} color={color} size={24} />
                     ),

@@ -106,10 +106,6 @@ export default function ChatRoomsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Chat Rooms</Text>
-      </View>
-
       <FlashList
         estimatedItemSize={80}
         contentContainerStyle={styles.roomList}
