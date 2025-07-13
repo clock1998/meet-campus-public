@@ -2,7 +2,7 @@ import { useSession } from '@/context/AuthContext';
 import { CreateMessageResponse, CreateMessageRequest } from '@/services/signalRService';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { useSignalR } from '@/context/SignalRContext';
 
@@ -14,10 +14,17 @@ export default function ChatRoomScreen() {
   const [isConnecting, setIsConnecting] = useState(false);
   const { signalRService, isConnected, onlineUsers, chatRooms } = useSignalR();
   const router = useRouter();
+  const navigation = useNavigation();
 
   useEffect(() => {
     if (!userSession?.token || !roomId || !signalRService) return;
+
     let chatRoom = chatRooms.find(n => n.id === roomId);
+    
+    if (chatRoom) {
+      navigation.setOptions({ title: chatRoom.name, headerBackTitle: 'Chat' });
+    }
+
     if (chatRoom?.messages) {
       setMessages(chatRoom.messages.map(n => ({
         id: n.id,
@@ -42,7 +49,7 @@ export default function ChatRoomScreen() {
         console.log(message);
       });
       signalRService.joinRoom(roomId as string);
-  }, [userSession?.token, roomId,signalRService, isConnected, onlineUsers, router]);
+  }, [userSession?.token, roomId,signalRService, isConnected, onlineUsers, router, navigation]);
 
   const handleSendMessage = async () => {
     if (!signalRService || !userSession?.user || !newMessage.trim()) return;
@@ -76,10 +83,6 @@ export default function ChatRoomScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>Chat Room</Text>
-      </View>
-
       <FlashList
         estimatedItemSize={100}
         style={styles.messageList}

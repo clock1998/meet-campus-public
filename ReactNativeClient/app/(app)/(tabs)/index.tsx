@@ -3,7 +3,6 @@ import { Link } from 'expo-router';
 import ImageViewer from '@/components/ImageViewer';
 import Button from '@/components/Button';
 import { useSession } from '@/context/AuthContext';
-
 export default function Index() {
   const { userSession } = useSession();
   return (
