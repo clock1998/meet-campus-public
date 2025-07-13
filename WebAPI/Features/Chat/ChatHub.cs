@@ -90,9 +90,26 @@ namespace WebAPI.Features.Chat
         public async Task CreateRoom(CreateRoomRequest request)
         {
             var currentUser =  await GetCurrentUserAsync();
-            var room = await _createRoomHandler.HandleAsync(request, currentUser);
-            var userIds = request.UserIds.Select(n => n.ToString()).ToList();
-            await Clients.Users(userIds)
+            var currentUserRooms = _context.Rooms.Where(n=>n.ApplicationUsers.Any(x=>x.Id == currentUser.Id)).ToList();
+            var room = currentUserRooms
+                .FirstOrDefault(
+                    n=>
+                        Enumerable.SequenceEqual(n.ApplicationUsers.Select(x=>x.Id).Order().ToList(), request.UserIds.Order()));
+            if (room is null)
+            {
+                room = await _createRoomHandler.HandleAsync(request, currentUser);
+                var userIds = request.UserIds.Select(n => n.ToString()).ToList();
+                await Clients.Users(userIds)
+                    .SendAsync("CreateRoomHandler", 
+                        new ChatRoom(
+                            room.Id.ToString(), 
+                            room.Name, 
+                            null, 
+                            room.Messages.Any() ? room.Messages.OrderByDescending(m => m.Created).ToList(): null, 
+                            room.ApplicationUsers.ToList()));
+            }
+
+            await Clients.Caller
                 .SendAsync("CreateRoomHandler", 
                     new ChatRoom(
                         room.Id.ToString(), 
@@ -103,8 +120,7 @@ namespace WebAPI.Features.Chat
             // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
             //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }
-
-
+        
         public async Task JoinRoom(Guid roomId)
         {
             var currentConnectionId = Context.ConnectionId;
