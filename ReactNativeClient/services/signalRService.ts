@@ -10,7 +10,7 @@ export interface CreateMessageRequest {
 export interface CreateMessageResponse{
   id: string;
   content: string;
-  username: string;
+  userName: string;
   created: Date;
   updated: Date;
 }

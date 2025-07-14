@@ -1,34 +1,49 @@
-import { baseApiUrl, postOptions } from "./base";
-import { UserSession } from "@/context/AuthContext";
+import { CreateMessageResponse } from "@/services/signalRService";
+import { ApiError, baseApiUrl, getOptions, postOptions } from "./base";
 
-export interface ApiError extends Error{
-    detail:string,
-    instance:string,
-    requestId:string,
-    status:number,
-    title:string,
-    traceId:string,
-    type:string,
+// Define the message response type based on the backend GetAllByRoomIdHandlerMessageResponse
+
+// Define the paged response type based on the backend PagedList
+export interface PagedMessageResponse {
+  items: CreateMessageResponse[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPagesCount: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+  columnNames: string[];
 }
 
-export interface LoginCredentials {
-    username: string;
-    password: string;
+// Define the query parameters interface
+export interface GetMessagesByRoomIdParams {
+  roomId: string;
+  search?: string;
+  sortColum?: string;
+  sortOrder?: string;
+  page?: number;
+  pageSize?: number;
 }
 
-export async function login(data: LoginCredentials): Promise<UserSession> {
-    postOptions.body = JSON.stringify(data)
-    const response = await fetch(`${baseApiUrl}/Auth/Login`, postOptions);
-    if (!response.ok) {
-        const errorData: ApiError = await response.json(); // if the API returns JSON error info
-        throw errorData;
-    }
-    return await response.json();
-}
+export async function getMessagesByRoomId(params: GetMessagesByRoomIdParams, token: string): Promise<PagedMessageResponse> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('roomId', params.roomId);
+    
+    if (params.search) queryParams.append('Search', params.search);
+    if (params.sortColum) queryParams.append('SortColum', params.sortColum);
+    if (params.sortOrder) queryParams.append('SortOrder', params.sortOrder);
+    if (params.page) queryParams.append('Page', params.page.toString());
+    if (params.pageSize) queryParams.append('PageSize', params.pageSize.toString());
 
-export async function refresh(data: { refreshToken: string }): Promise<UserSession> {
-    postOptions.body = JSON.stringify(data)
-    const response = await fetch(`${baseApiUrl}/Auth/RefreshToken`, postOptions);
+    const authOptions = {
+        ...getOptions,
+        headers: {
+            ...getOptions.headers,
+            'Authorization': `Bearer ${token}`
+        }
+    };
+
+    const response = await fetch(`${baseApiUrl}/Message/GetByRoomId?${queryParams.toString()}`, authOptions);
     if (!response.ok) {
         const errorData: ApiError = await response.json(); // if the API returns JSON error info
         throw errorData;

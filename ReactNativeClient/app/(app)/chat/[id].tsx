@@ -5,51 +5,83 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingVi
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { useSignalR } from '@/context/SignalRContext';
-
+import { getMessagesByRoomId, PagedMessageResponse } from '@/apis/chatRoom';
 export default function ChatRoomScreen() {
   const { id: roomId } = useLocalSearchParams();
   const { userSession } = useSession();
   const [messages, setMessages] = useState<CreateMessageResponse[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false);
+  const [pagedMetaData, setPagedMetaData] = useState<PagedMessageResponse>();
+  const [pageNumber, setPageNumber] = useState(1);
   const { signalRService, isConnected, onlineUsers, chatRooms } = useSignalR();
   const router = useRouter();
   const navigation = useNavigation();
 
   useEffect(() => {
     if (!userSession?.token || !roomId || !signalRService) return;
-
+    
+    const validRoomId = Array.isArray(roomId) ? roomId[0] : roomId;
+      const response = getMessagesByRoomId({
+        roomId: validRoomId,
+        page: pageNumber,
+        // Add pagination or offset if your API supports it, e.g. offset: messages.length
+      }, userSession.token).then((response)=>{
+        setMessages(prev => [...prev, ...response.items ]);
+        setPagedMetaData(response);  
+        setMessages(response.items);
+        console.log(response)
+      });
     let chatRoom = chatRooms.find(n => n.id === roomId);
     
     if (chatRoom) {
       navigation.setOptions({ title: chatRoom.name, headerBackTitle: 'Chat' });
     }
 
-    if (chatRoom?.messages) {
-      setMessages(chatRoom.messages.map(n => ({
-        id: n.id,
-        username: n.applicationUser.email,
-        content: n.content,
-        created: n.created,
-        updated: n.updated
-      })));
-    }
-    
     // Set up message handler
     signalRService.sendMessageToRoomHandler((message: CreateMessageResponse) => {
-        setMessages(prev => [{
-          id: message.id,
-          username: message.username,
-          content: message.content,
-          created: message.created!,
-          updated: message.updated!
-        }, ...prev]);
+        setMessages(prev => [message, ...prev]);
       });
       signalRService.joinRoomHandler((message: string) => {
         console.log(message);
       });
       signalRService.joinRoom(roomId as string);
   }, [userSession?.token, roomId,signalRService, isConnected, onlineUsers, router, navigation]);
+
+  const loadOlderMessages = async () => {
+    if (isLoadingOlderMessages || !pagedMetaData?.hasNext || !signalRService || !userSession) return;
+    
+    setIsLoadingOlderMessages(true);
+    try {
+      console.log('Loading older messages...');
+      // Ensure roomId is a string, as getMessagesByRoomId expects a string type
+      const validRoomId = Array.isArray(roomId) ? roomId[0] : roomId;
+      const response = await getMessagesByRoomId({
+        roomId: validRoomId,
+        page: pageNumber,
+        // Add pagination or offset if your API supports it, e.g. offset: messages.length
+      }, userSession.token);
+      setMessages(prev => [...prev, ...response.items ]);
+      setPagedMetaData(response);
+      if(pageNumber<pagedMetaData.totalPagesCount){
+        setPageNumber(prev => prev + 1);
+      }
+      // TODO: Check if there are more messages to load
+      // setHasMoreMessages(olderMessages.length > 0);
+      
+    } catch (error) {
+      console.error('Failed to load older messages:', error);
+    } finally {
+      setIsLoadingOlderMessages(false);
+    }
+  };
+
+  const  handleEndReached = async () => {
+    if (!isLoadingOlderMessages && pagedMetaData?.hasNext) {
+      await loadOlderMessages();
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!signalRService || !userSession?.user || !newMessage.trim()) return;
@@ -89,12 +121,22 @@ export default function ChatRoomScreen() {
         data={messages}
         inverted={true}
         keyExtractor={(item: CreateMessageResponse) => item.id}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.1}
+        ListFooterComponent={
+          isLoadingOlderMessages ? (
+            <View style={styles.loadingFooter}>
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text style={styles.loadingFooterText}>Loading older messages...</Text>
+            </View>
+          ) : null
+        }
         renderItem={({ item }: { item: CreateMessageResponse }) => (
           <View style={[
             styles.messageContainer,
-            item.username === userSession?.user?.email ? styles.sentMessage : styles.receivedMessage
+            item.userName === userSession?.user?.email ? styles.sentMessage : styles.receivedMessage
           ]}>
-            <Text style={styles.senderName}>{item.username}</Text>
+            <Text style={styles.senderName}>{item.userName}</Text>
             <Text style={styles.messageText}>{item.content}</Text>
             <Text style={styles.timestamp}>
               {new Date(item.created).toLocaleTimeString()}
@@ -226,6 +268,17 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+    color: '#666',
+  },
+  loadingFooter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingFooterText: {
+    marginLeft: 10,
+    fontSize: 14,
     color: '#666',
   },
 }); 

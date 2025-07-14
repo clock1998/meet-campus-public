@@ -19,8 +19,7 @@ export default function ChatRoomsScreen() {
 
   useEffect(() => {
     if (!signalRService || !isConnected) return;
-
-  console.log(chatRooms)
+    console.log(chatRooms)
 
   }, [signalRService, isConnected, onlineUsers, chatRooms, router]);
 

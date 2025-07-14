@@ -49,6 +49,7 @@ namespace WebAPI.Features.Chat
                 _context.Users
                     .Where(n=>ChatHubConnections.GetOnlineUsers().Contains(n.Id.ToString()))
                     .Select(n=>new User(n)).ToList();
+            //send Online users to all connected users.
             await Clients.All.SendAsync("OnlineUsersHandler", onlineUsers);
             var connectionIds = ChatHubConnections.GetOnlineUserSessions(currentUser.Id.ToString());
             foreach (var connectionId in connectionIds)
@@ -199,7 +200,7 @@ namespace WebAPI.Features.Chat
                         n.Id.ToString(), 
                         n.Name, 
                         n.Messages.Any() ? new ChatMessage(n.Messages.LastOrDefault().Id.ToString(), n.Messages.LastOrDefault().Content, n.Messages.LastOrDefault().ApplicationUser.UserName) : null , 
-                        n.Messages.Any() ? n.Messages.OrderByDescending(m => m.Created).ToList():null, 
+                        null, 
                         n.ApplicationUsers.ToList())));
         }
 

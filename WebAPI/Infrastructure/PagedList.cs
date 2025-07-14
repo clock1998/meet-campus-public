@@ -14,7 +14,8 @@ namespace WebAPI.Infrastructure
         public bool HasNext => Page * PageSize < TotalCount;
 
         public string[] ColumnNames { get; private set; }
-        public PagedList(List<T> items, int page, int pageSize, int totalCount)
+
+        private PagedList(List<T> items, int page, int pageSize, int totalCount)
         {
             Items = items;
             Page = page;
@@ -23,7 +24,7 @@ namespace WebAPI.Infrastructure
             TotalCount = totalCount;
             TotalPagesCount = (int)Math.Ceiling(totalCount / (double)pageSize);
         }
-        public async static Task<PagedList<T>> ToPagedListAsync(IQueryable<T> query, int page, int pageSize)
+        public static async Task<PagedList<T>> ToPagedListAsync(IQueryable<T> query, int page, int pageSize)
         {
             var totalCount = await query.CountAsync();
             var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();

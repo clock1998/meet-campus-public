@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection.Metadata;
+using System.Security.Claims;
 using WebAPI.Features.Chat.ChatMessage.Command;
 using WebAPI.Features.Chat.ChatMessage.Query;
 using WebAPI.Features.Chat.ChatRoom.Command;
@@ -39,10 +40,19 @@ namespace WebAPI.Features.Chat.ChatMessage
             return Ok(result);
         }
 
-        [HttpGet("GetAllByRoomId")]
-        public async Task<IActionResult> GetMessagesByRoomId([FromBody] GetAllByRoomIdHandlerMessageRequest request, [FromQuery] QueryStringParameters queryStringParameters)
+        [HttpGet("GetByRoomId")]
+        public async Task<IActionResult> GetMessagesByRoomId([FromQuery] Guid roomId, [FromQuery] QueryStringParameters queryStringParameters)
         {
-            return Ok(await _getMessagesByRoomIdHandler.HandleAsync(request, queryStringParameters));
+            queryStringParameters.PageSize = 7;
+            queryStringParameters.SortOrder = "desc";
+            var userId = User.FindFirstValue( ClaimTypes.NameIdentifier);
+            if(userId is not null)
+                return Ok(await _getMessagesByRoomIdHandler.HandleAsync(roomId, queryStringParameters, new Guid(userId)));
+            return Problem(
+                detail: "User not found", 
+                instance: null, 
+                StatusCodes.Status400BadRequest, title: "Bad Request"
+                );
         }
     }
 }
