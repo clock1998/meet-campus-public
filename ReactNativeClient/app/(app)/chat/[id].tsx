@@ -23,16 +23,15 @@ export default function ChatRoomScreen() {
     if (!userSession?.token || !roomId || !signalRService) return;
     
     const validRoomId = Array.isArray(roomId) ? roomId[0] : roomId;
-      const response = getMessagesByRoomId({
-        roomId: validRoomId,
-        page: pageNumber,
-        // Add pagination or offset if your API supports it, e.g. offset: messages.length
-      }, userSession.token).then((response)=>{
-        setMessages(prev => [...prev, ...response.items ]);
-        setPagedMetaData(response);  
-        setMessages(response.items);
-        console.log(response)
-      });
+    getMessagesByRoomId({
+      roomId: validRoomId,
+      page: 1,
+    }, userSession.token).then((response) => {
+      setPagedMetaData(response);
+      setMessages(response.items);
+      setPageNumber(2); // Set to 2 so next load fetches the next page
+    });
+
     let chatRoom = chatRooms.find(n => n.id === roomId);
     
     if (chatRoom) {
@@ -47,15 +46,13 @@ export default function ChatRoomScreen() {
         console.log(message);
       });
       signalRService.joinRoom(roomId as string);
-  }, [userSession?.token, roomId,signalRService, isConnected, onlineUsers, router, navigation]);
+  }, [userSession?.token, roomId, signalRService, isConnected, onlineUsers, router, navigation]);
 
   const loadOlderMessages = async () => {
     if (isLoadingOlderMessages || !pagedMetaData?.hasNext || !signalRService || !userSession) return;
     
     setIsLoadingOlderMessages(true);
     try {
-      console.log('Loading older messages...');
-      // Ensure roomId is a string, as getMessagesByRoomId expects a string type
       const validRoomId = Array.isArray(roomId) ? roomId[0] : roomId;
       const response = await getMessagesByRoomId({
         roomId: validRoomId,
@@ -64,12 +61,10 @@ export default function ChatRoomScreen() {
       }, userSession.token);
       setMessages(prev => [...prev, ...response.items ]);
       setPagedMetaData(response);
-      if(pageNumber<pagedMetaData.totalPagesCount){
+
+      if (pageNumber < response.totalPagesCount) {
         setPageNumber(prev => prev + 1);
       }
-      // TODO: Check if there are more messages to load
-      // setHasMoreMessages(olderMessages.length > 0);
-      
     } catch (error) {
       console.error('Failed to load older messages:', error);
     } finally {
