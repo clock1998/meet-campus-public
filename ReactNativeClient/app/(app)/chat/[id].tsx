@@ -112,7 +112,7 @@ export default function ChatRoomScreen() {
     <KeyboardAvoidingView 
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20} // Increase this value
     >
       <FlashList
         estimatedItemSize={100}
@@ -241,6 +241,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
     backgroundColor: '#fff',
+    paddingBottom: 30, // <-- Add this line
   },
   input: {
     flex: 1,
