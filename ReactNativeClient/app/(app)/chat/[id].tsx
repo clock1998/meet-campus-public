@@ -72,7 +72,7 @@ export default function ChatRoomScreen() {
     }
   };
 
-  const  handleEndReached = async () => {
+  const handleEndReached = async () => {
     if (!isLoadingOlderMessages && pagedMetaData?.hasNext) {
       await loadOlderMessages();
     }
@@ -81,17 +81,21 @@ export default function ChatRoomScreen() {
   const handleSendMessage = async () => {
     if (!signalRService || !userSession?.user || !newMessage.trim()) return;
 
+    const messageToSend = newMessage.trim();
+    setNewMessage(''); // <-- Clear input immediately
+
     try {
       const messageRequest: CreateMessageRequest = {
         userId: userSession.user.id,
         roomId: roomId as string,
-        content: newMessage.trim()
+        content: messageToSend
       };
-      
+
       await signalRService.sendMessageToRoom(messageRequest);
-      setNewMessage('');
     } catch (error) {
       console.error('Failed to send message:', error);
+      // Optionally restore the message if sending fails
+      setNewMessage(messageToSend);
     }
   };
 
