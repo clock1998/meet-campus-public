@@ -12,15 +12,6 @@ export default function ChatScreen() {
 
   useEffect(() => {
     if (!signalRService || !isConnected) return;
-
-    // Set up room creation handler
-    signalRService.createRoomHandler((room: ChatRoom) => {
-      console.log('Room created:', room.id);
-      router.push({
-        pathname: '/(app)/chat/[id]',
-        params: { id: room.id }
-      });
-    });
   }, [signalRService, isConnected, onlineUsers, router]);
 
   const handleUserPress = async (selectedUser: ChatUser) => {

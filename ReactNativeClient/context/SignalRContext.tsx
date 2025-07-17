@@ -1,6 +1,7 @@
 import React, { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import { ChatUser, ChatRoom, SignalRService } from '@/services/signalRService';
 import { useSession } from './AuthContext';
+import { router } from 'expo-router';
 
 interface SignalRContextType {
   signalRService: SignalRService | null;
@@ -51,7 +52,15 @@ export function SignalRProvider({ children }: PropsWithChildren) {
         service.getChatRoomsHandler((rooms: ChatRoom[]) => {
           setChatRooms(rooms);
         });
-  
+        
+        service.createRoomHandler((room: ChatRoom) => {
+          console.log('Room created:', room.id);
+          router.push({
+            pathname: '/(app)/chat/[id]',
+            params: { id: room.id }
+          });
+        });
+
         await service.connect();
         setIsConnected(true);
         

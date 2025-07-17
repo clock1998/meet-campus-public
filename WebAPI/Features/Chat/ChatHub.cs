@@ -109,15 +109,17 @@ namespace WebAPI.Features.Chat
                             room.Messages.Any() ? room.Messages.OrderByDescending(m => m.Created).ToList(): null, 
                             room.ApplicationUsers.ToList()));
             }
-
-            await Clients.Caller
-                .SendAsync("CreateRoomHandler", 
-                    new ChatRoom(
-                        room.Id.ToString(), 
-                        room.Name, 
-                        null, 
-                        room.Messages.Any() ? room.Messages.OrderByDescending(m => m.Created).ToList(): null, 
-                        room.ApplicationUsers.ToList()));
+            else
+            {
+                await Clients.Caller
+                    .SendAsync("CreateRoomHandler", 
+                        new ChatRoom(
+                            room.Id.ToString(), 
+                            room.Name, 
+                            null, 
+                            room.Messages.Any() ? room.Messages.OrderByDescending(m => m.Created).ToList(): null, 
+                            room.ApplicationUsers.ToList()));
+            }
             // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
             //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }
