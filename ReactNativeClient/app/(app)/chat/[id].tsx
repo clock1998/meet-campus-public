@@ -130,18 +130,23 @@ export default function ChatRoomScreen() {
             </View>
           ) : null
         }
-        renderItem={({ item }: { item: CreateMessageResponse }) => (
-          <View style={[
-            styles.messageContainer,
-            item.username === userSession?.user?.email ? styles.sentMessage : styles.receivedMessage
-          ]}>
-            <Text style={styles.senderName}>{item.username}</Text>
-            <Text style={styles.messageText}>{item.content}</Text>
-            <Text style={styles.timestamp}>
-              {new Date(item.created).toLocaleTimeString()}
-            </Text>
-          </View>
-        )}
+        renderItem={({ item }: { item: CreateMessageResponse }) => {
+          const isSent = item.username === userSession?.user?.email;
+          return (
+            <View style={{ alignItems: isSent ? 'flex-end' : 'flex-start', marginBottom: 8 }}>
+              <Text style={styles.senderName}>{item.username}</Text>
+              <View style={[
+                styles.messageContainer,
+                isSent ? styles.sentMessage : styles.receivedMessage
+              ]}>
+                <Text style={styles.messageText}>{item.content}</Text>
+                <Text style={styles.timestamp}>
+                  {new Date(item.created).toLocaleTimeString()}
+                </Text>
+              </View>
+            </View>
+          );
+        }}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No messages yet</Text>
