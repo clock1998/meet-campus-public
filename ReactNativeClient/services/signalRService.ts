@@ -10,7 +10,7 @@ export interface CreateMessageRequest {
 export interface CreateMessageResponse{
   id: string;
   content: string;
-  userName: string;
+  username: string;
   created: Date;
   updated: Date;
 }
@@ -38,7 +38,7 @@ export interface ChatRoom {
     content: string;
     created: Date;
     updated: Date;
-    username: string;
+    userName: string;
   };
   messages: Message[];
   users: ChatUser[];

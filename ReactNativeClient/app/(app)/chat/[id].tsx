@@ -42,10 +42,10 @@ export default function ChatRoomScreen() {
     signalRService.sendMessageToRoomHandler((message: CreateMessageResponse) => {
         setMessages(prev => [message, ...prev]);
       });
-      signalRService.joinRoomHandler((message: string) => {
-        console.log(message);
-      });
-      signalRService.joinRoom(roomId as string);
+    signalRService.joinRoomHandler((message: string) => {
+      console.log(message);
+    });
+      //signalRService.joinRoom(roomId as string);
   }, [userSession?.token, roomId, signalRService, isConnected, onlineUsers, router, navigation]);
 
   const loadOlderMessages = async () => {
@@ -87,7 +87,7 @@ export default function ChatRoomScreen() {
         roomId: roomId as string,
         content: newMessage.trim()
       };
-
+      
       await signalRService.sendMessageToRoom(messageRequest);
       setNewMessage('');
     } catch (error) {
@@ -129,9 +129,9 @@ export default function ChatRoomScreen() {
         renderItem={({ item }: { item: CreateMessageResponse }) => (
           <View style={[
             styles.messageContainer,
-            item.userName === userSession?.user?.email ? styles.sentMessage : styles.receivedMessage
+            item.username === userSession?.user?.email ? styles.sentMessage : styles.receivedMessage
           ]}>
-            <Text style={styles.senderName}>{item.userName}</Text>
+            <Text style={styles.senderName}>{item.username}</Text>
             <Text style={styles.messageText}>{item.content}</Text>
             <Text style={styles.timestamp}>
               {new Date(item.created).toLocaleTimeString()}

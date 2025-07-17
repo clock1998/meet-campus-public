@@ -150,7 +150,7 @@ namespace WebAPI.Features.Chat
                         n.Id.ToString(), 
                         n.Name, 
                         new ChatMessage(message.Id.ToString(), message.Content, message.Username, message.Updated), 
-                        n.Messages.OrderByDescending(m => m.Created).ToList(), 
+                        null, 
                         n.ApplicationUsers.ToList())));
         }
         

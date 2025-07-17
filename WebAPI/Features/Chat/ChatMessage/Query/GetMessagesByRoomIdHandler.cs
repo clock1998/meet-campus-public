@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using WebAPI.Infrastructure;
 using WebAPI.Infrastructure.Context;
@@ -6,7 +7,7 @@ using WebAPI.Infrastructure.Helper;
 
 namespace WebAPI.Features.Chat.ChatMessage.Query
 {
-    public sealed record GetAllByRoomIdHandlerMessageResponse(Guid Id, string Content, DateTime Created, string? UserName);
+    public sealed record GetAllByRoomIdHandlerMessageResponse(Guid Id, string Content, DateTime Created, [property: JsonPropertyName("username")] string? Username);
     public class GetMessagesByRoomIdHandler
     {
         private readonly AppDbContext _context;
