@@ -38,7 +38,7 @@ export interface ChatRoom {
     content: string;
     created: Date;
     updated: Date;
-    userName: string;
+    username: string;
   };
   messages: Message[];
   users: ChatUser[];
