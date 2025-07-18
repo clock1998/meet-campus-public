@@ -28,8 +28,10 @@ export default function ChatRoomScreen() {
       page: 1,
     }, userSession.token).then((response) => {
       setPagedMetaData(response);
-      setMessages(response.items);
-      setPageNumber(2); // Set to 2 so next load fetches the next page
+      if(response.items.length > 0){
+        setMessages(response.items);
+        setPageNumber(2); // Set to 2 so next load fetches the next page
+      }      
     });
 
     let chatRoom = chatRooms.find(n => n.id === roomId);

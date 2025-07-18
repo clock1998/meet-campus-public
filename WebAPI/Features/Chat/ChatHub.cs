@@ -106,8 +106,8 @@ namespace WebAPI.Features.Chat
                             room.Id.ToString(), 
                             room.Name, 
                             null, 
-                            room.Messages.Any() ? room.Messages.OrderByDescending(m => m.Created).ToList(): null, 
-                            room.ApplicationUsers.ToList()));
+                            null, 
+                            null));
             }
             else
             {
@@ -117,27 +117,33 @@ namespace WebAPI.Features.Chat
                             room.Id.ToString(), 
                             room.Name, 
                             null, 
-                            room.Messages.Any() ? room.Messages.OrderByDescending(m => m.Created).ToList(): null, 
-                            room.ApplicationUsers.ToList()));
+                            null, 
+                            null));
             }
+
+            await JoinRoom(room.Id);
             // await Clients.Group(room.Id.ToString()).SendAsync("CreateRoomHandler",
             //     $"{String.Concat(ChatHubConnections.GetOnlineUsers().FindAll(n=>request.UserIds.Contains( n.Id)).Select(n=>n.UserName), ",")} has joined the group {room.Id}.");
         }
         
         public async Task JoinRoom(Guid roomId)
         {
-            var currentConnectionId = Context.ConnectionId;
-            var user = await GetCurrentUserAsync();
             var room = await _context.Rooms.FindAsync(roomId);
             if (room is not null)
             {
-                var connectionIds = ChatHubConnections.GetOnlineUserSessions(user.Id.ToString()).Distinct();
-                if (!connectionIds.Contains(currentConnectionId))
+                var userIds = room.ApplicationUsers.Select(n => n.Id);
+                var connectionIds = new List<string>();
+                foreach (var userId in userIds)
                 {
-                    await Groups.AddToGroupAsync(currentConnectionId, room.Id.ToString());
-                    await Clients.Group(room.Id.ToString())
-                        .SendAsync("JoinRoomHandler", $"{user.UserName} has joined the group {roomId}.");
+                    connectionIds.AddRange(ChatHubConnections.GetOnlineUserSessions(userId.ToString()));
                 }
+                connectionIds = connectionIds.Distinct().ToList();
+                foreach (var connectionId in connectionIds)
+                {
+                    await Groups.AddToGroupAsync(connectionId, room.Id.ToString());    
+                }
+                // await Clients.Group(room.Id.ToString())
+                //     .SendAsync("JoinRoomHandler", $"{user.UserName} has joined the group {roomId}.");
             }
         }
 
