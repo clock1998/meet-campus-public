@@ -97,7 +97,11 @@ export class SignalRService {
   public joinRoomHandler(callback: (message: string) => void): void {
     this.connection.on('JoinRoomHandler', callback);
   }
-  
+
+  public deleteRoomHandler(callback: (message: string) => void): void {
+    this.connection.on('DeleteRoomHandler', callback);
+  }
+
   public async getUserRooms(): Promise<void> {
     try {
       await this.connection.invoke('GetUserRooms');

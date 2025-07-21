@@ -171,6 +171,13 @@ namespace WebAPI.Features.Chat
                 return;
             }
             var currentUser =  await GetCurrentUserAsync();
+            await Clients.Group(room.Id.ToString()).SendAsync("DeleteRoomHandler", roomId);
+            var sessions = ChatHubConnections.GetOnlineUserSessions(currentUser.Id.ToString());
+            foreach (var session in sessions)
+            {
+                await Groups.RemoveFromGroupAsync(session, room.Id.ToString());    
+            }
+            
             if (!currentUser.Rooms.Select(n => n.Id).Contains(roomId))
             {
                 await Clients.Caller.SendAsync("DeleteRoomHandler", "You are not a member of this room.");
@@ -178,30 +185,12 @@ namespace WebAPI.Features.Chat
             }
             _context.Rooms.Remove(room);
             await _context.SaveChangesAsync();
-            var sessions = ChatHubConnections.GetOnlineUserSessions(currentUser.Id.ToString());
-            foreach (var session in sessions)
-            {
-                await Groups.RemoveFromGroupAsync(session, room.Id.ToString());    
-            }
-
-            await SendChatRoomsToCallerAsync();
-            // await Clients.Group(request.RoomId.ToString()).SendAsync("DeleteRoomHandler",
-            //     $"Room {request.RoomId} has been deleted.");
+            
         }
         
         private async Task SendChatRoomsToCallerAsync()
         {
             var currentUser =  await GetCurrentUserAsync();
-            var test = currentUser.Rooms.Select(n =>
-                new ChatRoom(
-                    n.Id.ToString(),
-                    n.Name,
-                    n.Messages.Any()
-                        ? new ChatMessage(n.Messages.LastOrDefault().Id.ToString(), n.Messages.LastOrDefault().Content,
-                            n.Messages.LastOrDefault().ApplicationUser.UserName)
-                        : null,
-                    n.Messages.Any() ? n.Messages.OrderByDescending(m => m.Created).ToList() : null,
-                    n.ApplicationUsers.ToList()));
             await Clients.Caller.SendAsync("GetChatRoomsHandler", 
                 currentUser.Rooms.Select(n=> 
                     new ChatRoom(

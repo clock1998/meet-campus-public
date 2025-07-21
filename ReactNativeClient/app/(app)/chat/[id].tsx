@@ -44,9 +44,22 @@ export default function ChatRoomScreen() {
     signalRService.sendMessageToRoomHandler((message: CreateMessageResponse) => {
         setMessages(prev => [message, ...prev]);
       });
+
     signalRService.joinRoomHandler((message: string) => {
       console.log(message);
     });
+
+
+    signalRService.deleteRoomHandler((deletedRoomId)=>{
+      const validRoomId = Array.isArray(roomId) ? roomId[0] : roomId;
+      if (validRoomId === deletedRoomId) {
+        router.replace({
+          pathname: '/(app)/(tabs)/chat',
+        });
+      }
+    })
+
+
       //signalRService.joinRoom(roomId as string);
   }, [userSession?.token, roomId, signalRService, isConnected, onlineUsers, router, navigation]);
 

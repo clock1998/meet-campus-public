@@ -5,11 +5,13 @@ import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { useSignalR } from '@/context/SignalRContext';
 import { ChatRoom } from '@/services/signalRService';
+import { useLocalSearchParams } from 'expo-router';
 
 const { height: screenHeight } = Dimensions.get('window');
 
 export default function ChatRoomsScreen() {
   const { userSession } = useSession();
+
   const [isLoading, setIsLoading] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
@@ -19,7 +21,6 @@ export default function ChatRoomsScreen() {
 
   useEffect(() => {
     if (!signalRService || !isConnected) return;
-    console.log(chatRooms)
 
   }, [signalRService, isConnected, onlineUsers, chatRooms, router]);
 
@@ -81,9 +82,7 @@ export default function ChatRoomsScreen() {
 
   const handleDeleteRoom = async (roomId: string) => {
     try {
-      // TODO: Implement delete room functionality
       await signalRService?.deleteRoom(roomId);
-      console.log('Deleting room:', roomId);
     } catch (error) {
       console.error('Failed to delete room:', error);
     }

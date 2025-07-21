@@ -14,7 +14,7 @@ const SignalRContext = createContext<SignalRContextType>({
   signalRService: null,
   isConnected: false,
   onlineUsers: [],
-  chatRooms:[]
+  chatRooms: [],
 });
 
 export function SignalRProvider({ children }: PropsWithChildren) {
@@ -59,6 +59,10 @@ export function SignalRProvider({ children }: PropsWithChildren) {
             pathname: '/(app)/chat/[id]',
             params: { id: room.id }
           });
+        });
+
+        service.deleteRoomHandler((deletedRoomId: string) => {
+          setChatRooms(prevRooms => prevRooms.filter(room => room.id !== deletedRoomId));
         });
 
         await service.connect();
